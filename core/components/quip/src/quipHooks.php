@@ -26,6 +26,8 @@
  *
  * @package quip
  */
+namespace Quip;
+
 class quipHooks {
     /**
      * @var array $errors A collection of all the processed errors so far.
@@ -224,7 +226,7 @@ class quipHooks {
     public function getFields() {
         return $this->fields;
     }
-    
+
     /**
      * Redirect to a specified URL.
      *

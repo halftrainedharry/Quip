@@ -29,6 +29,8 @@
  * @license http://opensource.org/licenses/gpl-2.0.php GNU Public License v2
  * @package quip
  */
+namespace Quip;
+
 class Quip {
     /**
      * A collection of preprocessed chunk values.
@@ -68,7 +70,7 @@ class Quip {
     public $preHooks;
     /** @var quipHooks $postHooks */
     public $postHooks;
-    
+
     /**
      * The Quip Constructor.
      *
@@ -111,7 +113,7 @@ class Quip {
             'tplquipComments' => '',
             'tplquipLoginToComment' => '',
             'tplquipReport' => '',
-            
+
             'debugUser' => '',
         ),$config);
 
@@ -404,10 +406,10 @@ class Quip {
     public function getNonce($prefix = 'quip-') {
         return base64_encode($prefix.$this->modx->resource->get('id').'-'.session_id());
     }
-    
+
     /**
      * Verify that a passed nonce matches the cached nonce
-     * 
+     *
      * @param string $nonce The nonce to check against
      * @param string $prefix The prefix for the nonce
      * @return bool True if passes
@@ -421,7 +423,7 @@ class Quip {
         }
         return $passedNonce;
     }
-    
+
     /**
      * Create a nonce to be used for verification and store in cache
      *
@@ -438,7 +440,7 @@ class Quip {
 
     /**
      * Clean a string of tags and XSS attempts
-     * 
+     *
      * @param string $body The string to clean
      * @param array $scriptProperties An array of options
      * @return string The cleansed text

@@ -1,35 +1,35 @@
 <?php
+namespace Quip\Model;
+
+use xPDO\xPDO;
+
 /**
- * Quip
+ * Class quipThread
  *
- * Copyright 2010-11 by Shaun McCormick <shaun@modx.com>
+ * @property string $name
+ * @property string $createdon
+ * @property boolean $moderated
+ * @property string $moderator_group
+ * @property string $moderators
+ * @property string $notify_emails
+ * @property integer $resource
+ * @property string $idprefix
+ * @property array $existing_params
+ * @property array $quip_call_params
+ * @property array $quipreply_call_params
  *
- * This file is part of Quip, a simple commenting component for MODx Revolution.
+ * @property \Quip\Model\quipComment[] $Comments
+ * @property \Quip\Model\quipCommentNotify[] $Notifications
  *
- * Quip is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- *
- * Quip is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Quip; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA 02111-1307 USA
- *
- * @package quip
+ * @package Quip\Model
  */
-/**
- * @package quip
- */
-class quipThread extends xPDOObject {
+class quipThread extends \xPDO\Om\xPDOObject
+{
     /** @var modX $xpdo */
     public $xpdo;
     /**
      * Checks whether or not the user has access to the specified permission.
-     * 
+     *
      * @param string $permission
      * @return boolean True if user has permission
      */
@@ -88,7 +88,7 @@ class quipThread extends xPDOObject {
         }
         return $ret;
     }
-    
+
     /**
      * Make the URL of the Quip thread for easy reference
      *
@@ -156,7 +156,7 @@ class quipThread extends xPDOObject {
 
     /**
      * Ensure that the Lexicon is loaded for the modX instance
-     * 
+     *
      * @return bool True if loaded
      */
     protected function _loadLexicon() {
@@ -172,7 +172,7 @@ class quipThread extends xPDOObject {
 
     /**
      * Gets an array of emails for all moderators of this thread
-     * 
+     *
      * @return array
      */
     public function getModeratorEmails() {
@@ -218,7 +218,7 @@ class quipThread extends xPDOObject {
     public function notify(quipComment &$comment) {
         if (!$this->_loadLexicon()) return false;
         $this->xpdo->lexicon->load('quip:emails');
-        
+
         /* get the poster's email address */
         $posterEmail = false;
         $user = $comment->getOne('Author');
@@ -324,7 +324,7 @@ class quipThread extends xPDOObject {
      */
     public function truncate() {
         if (!$this->checkPolicy('truncate')) return false;
-        
+
         $c = $this->xpdo->newQuery('quipComment');
         $c->where(array(
             'thread' => $this->get('name'),

@@ -26,6 +26,8 @@
  *
  * @package quip
  */
+namespace Quip;
+
 class QuipTreeParser {
     /**
      * The last node output
@@ -59,7 +61,7 @@ class QuipTreeParser {
 
     /**
      * Parse the array in tree iteration
-     * 
+     *
      * @param array $array The array of nodes to parse
      * @param string $tpl The chunk to use for each node
      * @return string The outputted content
@@ -85,7 +87,7 @@ class QuipTreeParser {
 
     /**
      * Iterate across the current node
-     * 
+     *
      * @param array $current
      * @return string
      */

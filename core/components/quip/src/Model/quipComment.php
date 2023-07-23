@@ -1,30 +1,40 @@
 <?php
+namespace Quip\Model;
+
+use xPDO\xPDO;
+
 /**
- * Quip
+ * Class quipComment
  *
- * Copyright 2010-11 by Shaun McCormick <shaun@modx.com>
+ * @property string $thread
+ * @property integer $parent
+ * @property string $rank
+ * @property integer $author
+ * @property string $body
+ * @property string $createdon
+ * @property string $editedon
+ * @property boolean $approved
+ * @property string $approvedon
+ * @property integer $approvedby
+ * @property string $name
+ * @property string $email
+ * @property string $website
+ * @property string $ip
+ * @property boolean $deleted
+ * @property string $deletedon
+ * @property integer $deletedby
+ * @property integer $resource
+ * @property string $idprefix
+ * @property array $existing_params
  *
- * This file is part of Quip.
+ * @property \Quip\Model\quipComment[] $Children
+ * @property \Quip\Model\quipCommentClosure[] $Ancestors
+ * @property \Quip\Model\quipCommentClosure[] $Descendants
  *
- * Quip is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- *
- * Quip is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Quip; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA 02111-1307 USA
- *
- * @package quip
+ * @package Quip\Model
  */
-/**
- * @package quip
- */
-class quipComment extends xPDOSimpleObject {
+class quipComment extends \xPDO\Om\xPDOSimpleObject
+{
     /** @var modX|xPDO $xpdo */
     public $xpdo;
     /** @var boolean $isModerator */
@@ -34,7 +44,7 @@ class quipComment extends xPDOSimpleObject {
 
     /**
      * Gets the current thread
-     * 
+     *
      * @static
      * @param modX $modx
      * @param quipThread $thread
@@ -245,10 +255,10 @@ class quipComment extends xPDOSimpleObject {
     protected function sendEmail($subject,$body,$to) {
         if (!$this->_loadLexicon()) return false;
         $this->xpdo->lexicon->load('quip:emails');
-        
+
         $this->xpdo->getService('mail', 'mail.modPHPMailer');
         if (!$this->xpdo->mail) return false;
-        
+
         $emailFrom = $this->xpdo->context->getOption('quip.emailsFrom',$this->xpdo->context->getOption('emailsender'));
         $emailReplyTo = $this->xpdo->context->getOption('quip.emailsReplyTo',$this->xpdo->context->getOption('emailsender'));
 
@@ -260,7 +270,7 @@ class quipComment extends xPDOSimpleObject {
         $success = false;
         foreach ($to as $emailAddress) {
             if (empty($emailAddress) || strpos($emailAddress,'@') == false) continue;
-            
+
             $this->xpdo->mail->set(modMail::MAIL_BODY,$body);
             $this->xpdo->mail->set(modMail::MAIL_FROM,$emailFrom);
             $this->xpdo->mail->set(modMail::MAIL_FROM_NAME,$this->xpdo->context->getOption('quip.emails_from_name','Quip'));
@@ -272,7 +282,7 @@ class quipComment extends xPDOSimpleObject {
             $success = $this->xpdo->mail->send();
             $this->xpdo->mail->reset();
         }
-        
+
         return $success;
     }
 
@@ -294,7 +304,7 @@ class quipComment extends xPDOSimpleObject {
         if ($this->save() === false) {
             return false;
         }
-        
+
         /* send email to poster saying their comment was approved */
         $properties = $this->toArray();
         $properties['url'] = $this->makeUrl('',array(),array('scheme' => 'full'));
@@ -309,7 +319,7 @@ class quipComment extends xPDOSimpleObject {
 
     /**
      * Reject a comment
-     * 
+     *
      * @param array $options
      * @return boolean True if successful
      */
@@ -368,7 +378,7 @@ class quipComment extends xPDOSimpleObject {
         /** @var quipThread $thread */
         $thread = $this->getOne('Thread');
         if (!$thread) return false;
-        
+
         $properties = $this->toArray();
         $properties['url'] = $this->makeUrl('',array(),array('scheme' => 'full'));
 
@@ -401,7 +411,7 @@ class quipComment extends xPDOSimpleObject {
 
     /**
      * Prepare the comment for rendering
-     * 
+     *
      * @param array $properties
      * @param int $idx
      * @return array
