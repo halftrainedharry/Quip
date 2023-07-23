@@ -42,4 +42,3 @@ $quip->initialize($modx->context->get('key'));
 $controller = $quip->loadController('Thread');
 $output = $controller->run($scriptProperties);
 return $output;
-

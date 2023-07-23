@@ -1,0 +1,765 @@
+name: Quip
+lowCaseName: quip
+description: Simple commenting system.
+author: Shaun McCormick
+version: 3.0.0-alpha
+snippets:
+  - name: Quip
+    description: A simple commenting component.
+    file: snippet.quip.php
+    properties:
+      - name: thread
+        description: quip.prop_thread_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: parent
+        description: quip.prop_parent_desc
+        type: textfield
+        value: '0'
+        lexicon: quip:properties
+      - name: threaded
+        description: quip.prop_threaded_desc
+        type: combo-boolean
+        value: '1'
+        lexicon: quip:properties
+      - name: maxDepth
+        description: quip.prop_maxdepth_desc
+        type: textfield
+        value: '5'
+        lexicon: quip:properties
+      - name: replyResourceId
+        description: quip.prop_replyresourceid_desc
+        type: textfield
+        value:
+        lexicon: quip:properties
+      - name: threadedPostMargin
+        description: quip.prop_threadedpostmargin_desc
+        type: textfield
+        value: '15'
+        lexicon: quip:properties
+      - name: requireAuth
+        description: quip.prop_requireauth_desc
+        type: combo-boolean
+        value: '0'
+        lexicon: quip:properties
+      - name: requireUsergroups
+        description: quip.prop_requireusergroups_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: closed
+        description: quip.prop_closed_desc
+        type: combo-boolean
+        value: '0'
+        lexicon: quip:properties
+      - name: closeAfter
+        description: quip.prop_closeafter_desc
+        type: textfield
+        value: '14'
+        lexicon: quip:properties
+      - name: dateFormat
+        description: quip.prop_dateformat_desc
+        type: textfield
+        value: '%b %d, %Y at %I:%M %p'
+        lexicon: quip:properties
+      - name: useMargins
+        description: quip.prop_usemargins_desc
+        type: combo-boolean
+        value: ''
+        lexicon: quip:properties
+      - name: useCss
+        description: quip.prop_usecss_desc
+        type: combo-boolean
+        value: '1'
+        lexicon: quip:properties
+      - name: rowCss
+        description: quip.prop_rowcss_desc
+        type: textfield
+        value: quip-comment
+        lexicon: quip:properties
+      - name: altRowCss
+        description: quip.prop_altrowcss_desc
+        type: textfield
+        value: quip-comment-alt
+        lexicon: quip:properties
+      - name: olCss
+        description: quip.prop_olcss_desc
+        type: textfield
+        value: quip-comment-parent
+        lexicon: quip:properties
+      - name: unapprovedCss
+        description: quip.prop_unapprovedcss_desc
+        type: textfield
+        value: quip-unapproved
+        lexicon: quip:properties
+      - name: authorTpl
+        description: quip.prop_authortpl_desc
+        type: textfield
+        value: quipAuthorTpl
+        lexicon: quip:properties
+      - name: nameField
+        description: quip.prop_namefield_desc
+        type: textfield
+        value: username
+        lexicon: quip:properties
+      - name: showAnonymousName
+        description: quip.prop_showanonymousname_desc
+        type: combo-boolean
+        value: '0'
+        lexicon: quip:properties
+      - name: anonymousName
+        description: quip.prop_anonymousname_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: allowRemove
+        description: quip.prop_allowremove_desc
+        type: combo-boolean
+        value: '1'
+        lexicon: quip:properties
+      - name: removeThreshold
+        description: quip.prop_removethreshold_desc
+        type: textfield
+        value: '3'
+        lexicon: quip:properties
+      - name: allowReportAsSpam
+        description: quip.prop_allowreportasspam_desc
+        type: combo-boolean
+        value: '1'
+        lexicon: quip:properties
+      - name: useGravatar
+        description: quip.prop_usegravatar_desc
+        type: combo-boolean
+        value: '1'
+        lexicon: quip:properties
+      - name: gravatarIcon
+        description: quip.prop_gravataricon_desc
+        type: textfield
+        value: identicon
+        lexicon: quip:properties
+      - name: gravatarSize
+        description: quip.prop_gravatarsize_desc
+        type: textfield
+        value: '50'
+        lexicon: quip:properties
+      - name: sortBy
+        description: quip.prop_sortby_desc
+        type: textfield
+        value: rank
+        lexicon: quip:properties
+      - name: sortByAlias
+        description: quip.prop_sortbyalias_desc
+        type: list
+        options:
+          - text: quip.comment
+            value: quipComment
+          - text: quip.author
+            value: Author
+        value: quipComment
+        lexicon: quip:properties
+      - name: sortDir
+        description: quip.prop_sortdir_desc
+        type: list
+        options:
+          - text: quip.ascending
+            value: ASC
+          - text: quip.descending
+            value: DESC
+        value: ASC
+        lexicon: quip:properties
+      - name: toPlaceholder
+        description: quip.prop_toplaceholder_desc
+        type: textfield
+        value:
+        lexicon: quip:properties
+      - name: placeholderPrefix
+        description: quip.prop_placeholderprefix_desc
+        type: textfield
+        value: quip
+        lexicon: quip:properties
+      - name: tplComment
+        description: quip.prop_tplcomment_desc
+        type: textfield
+        value: quipComment
+        lexicon: quip:properties
+      - name: tplCommentOptions
+        description: quip.prop_tplcommentoptions_desc
+        type: textfield
+        value: quipCommentOptions
+        lexicon: quip:properties
+      - name: tplComments
+        description: quip.prop_tplcomments_desc
+        type: textfield
+        value: quipComments
+        lexicon: quip:properties
+      - name: tplReport
+        description: quip.prop_tplreport_desc
+        type: textfield
+        value: quipReport
+        lexicon: quip:properties
+      - name: reportAction
+        description: quip.prop_reportaction_desc
+        type: textfield
+        value: quip_report
+        lexicon: quip:properties
+      - name: removeAction
+        description: quip.prop_removeaction_desc
+        type: textfield
+        value: quip_remove
+        lexicon: quip:properties
+      - name: idPrefix
+        description: quip.prop_idprefix_desc
+        type: textfield
+        value: qcom
+        lexicon: quip:properties
+      - name: debug
+        description: quip.prop_debug_desc
+        type: combo-boolean
+        value: '0'
+        lexicon: quip:properties
+      - name: debugUser
+        description: quip.prop_debuguser_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: debugUserId
+        description: quip.prop_debuguserid_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: limit
+        description: quip.prop_limit_desc
+        type: textfield
+        value: '0'
+        lexicon: quip:properties
+      - name: start
+        description: quip.prop_start_desc
+        type: textfield
+        value: '0'
+        lexicon: quip:properties
+      - name: tplPagination
+        description: quip.prop_tplpagination_desc
+        type: textfield
+        value: quipPagination
+        lexicon: quip:properties
+      - name: tplPaginationItem
+        description: quip.prop_tplpaginationitem_desc
+        type: textfield
+        value: quipPaginationItem
+        lexicon: quip:properties
+      - name: tplPaginationCurrentItem
+        description: quip.prop_tplpaginationcurrentitem_desc
+        type: textfield
+        value: quipPaginationCurrentItem
+        lexicon: quip:properties
+      - name: paginationCls
+        description: quip.prop_paginationcls_desc
+        type: textfield
+        value: quip-pagination
+        lexicon: quip:properties
+      - name: pageCls
+        description: quip.prop_pagecls_desc
+        type: textfield
+        value: quip-page-number
+        lexicon: quip:properties
+      - name: currentPageCls
+        description: quip.prop_currentpagecls_desc
+        type: textfield
+        value: quip-page-current
+        lexicon: quip:properties
+  - name: QuipCount
+    description: An assistance snippet for getting thread/user comment counts.
+    file: snippet.quipcount.php
+    properties:
+      - name: type
+        description: quip.prop_count_type_desc
+        type: list
+        options:
+          - text: quip.thread
+            value: thread
+          - text: quip.user
+            value: user
+          - text: quip.family
+            value: family
+        value: thread
+        lexicon: quip:properties
+      - name: thread
+        description: quip.prop_count_thread_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: user
+        description: quip.prop_count_user_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: family
+        description: quip.prop_count_family_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: toPlaceholder
+        description: quip.prop_count_toplaceholder_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+  - name: QuipLatestComments
+    description: An assistance snippet for getting the latest comments for the whole site or a thread or user.
+    file: snippet.quiplatestcomments.php
+    properties:
+      - name: type
+        description: quip.prop_late_type_desc
+        type: list
+        options:
+          - text: quip.all
+            value: all
+          - text: quip.thread
+            value: thread
+          - text: quip.family
+            value: family
+          - text: quip.user
+            value: user
+        value: all
+        lexicon: quip:properties
+      - name: tpl
+        description: quip.prop_late_tpl_desc
+        type: textfield
+        value: quipLatestComment
+        lexicon: quip:properties
+      - name: thread
+        description: quip.prop_late_thread_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: user
+        description: quip.prop_late_user_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: family
+        description: quip.prop_late_family_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: stripTags
+        description: quip.prop_late_striptags_desc
+        type: combo-boolean
+        value: '1'
+        lexicon: quip:properties
+      - name: dateFormat
+        description: quip.prop_late_dateformat_desc
+        type: textfield
+        value: '%b %d, %Y at %I:%M %p'
+        lexicon: quip:properties
+      - name: bodyLimit
+        description: quip.prop_late_bodylimit_desc
+        type: textfield
+        value: '30'
+        lexicon: quip:properties
+      - name: rowCss
+        description: quip.prop_late_rowcss_desc
+        type: textfield
+        value: quip-latest-comment
+        lexicon: quip:properties
+      - name: altRowCss
+        description: quip.prop_late_altrowcss_desc
+        type: textfield
+        value: quip-latest-comment-alt
+        lexicon: quip:properties
+      - name: limit
+        description: quip.prop_late_limit_desc
+        type: textfield
+        value: '5'
+        lexicon: quip:properties
+      - name: start
+        description: quip.prop_late_start_desc
+        type: textfield
+        value: '0'
+        lexicon: quip:properties
+      - name: sortBy
+        description: quip.prop_late_sortby_desc
+        type: textfield
+        value: createdon
+        lexicon: quip:properties
+      - name: sortByAlias
+        description: quip.prop_late_sortbyalias_desc
+        type: list
+        options:
+          - text: quip.comment
+            value: quipComment
+          - text: quip.author
+            value: Author
+        value: quipComment
+        lexicon: quip:properties
+      - name: sortDir
+        description: quip.prop_late_sortdir_desc
+        type: list
+        options:
+          - text: quip.ascending
+            value: ASC
+          - text: quip.descending
+            value: DESC
+        value: DESC
+        lexicon: quip:properties
+      - name: contexts
+        description: quip.prop_late_contexts_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: toPlaceholder
+        description: quip.prop_late_toplaceholder_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: placeholderPrefix
+        description: quip.prop_late_placeholderprefix_desc
+        type: textfield
+        value: quip.latest
+        lexicon: quip:properties
+  - name: QuipReply
+    description: Displays a reply form for comments.
+    file: snippet.quipreply.php
+    properties:
+      - name: requireAuth
+        description: quip.prop_reply_requireauth_desc
+        type: combo-boolean
+        value: '0'
+        lexicon: quip:properties
+      - name: requireUsergroups
+        description: quip.prop_reply_requireusergroups_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: requirePreview
+        description: quip.prop_reply_requirepreview_desc
+        type: combo-boolean
+        value: '0'
+        lexicon: quip:properties
+      - name: closed
+        description: quip.prop_reply_closed_desc
+        type: combo-boolean
+        value: '0'
+        lexicon: quip:properties
+      - name: closeAfter
+        description: quip.prop_reply_closeafter_desc
+        type: textfield
+        value: '14'
+        lexicon: quip:properties
+      - name: moderate
+        description: quip.prop_reply_moderate_desc
+        type: combo-boolean
+        value: '0'
+        lexicon: quip:properties
+      - name: moderateAnonymousOnly
+        description: quip.prop_reply_moderateanonymousonly_desc
+        type: combo-boolean
+        value: '0'
+        lexicon: quip:properties
+      - name: moderateFirstPostOnly
+        description: quip.prop_reply_moderatefirstpostonly_desc
+        type: combo-boolean
+        value: '1'
+        lexicon: quip:properties
+      - name: moderators
+        description: quip.prop_reply_moderators_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: moderatorGroup
+        description: quip.prop_reply_moderatorgroup_desc
+        type: textfield
+        value: Administrator
+        lexicon: quip:properties
+      - name: dontModerateManagerUsers
+        description: quip.prop_reply_dontmoderatemanagerusers_desc
+        type: combo-boolean
+        value: '1'
+        lexicon: quip:properties
+      - name: dateFormat
+        description: quip.prop_reply_dateformat_desc
+        type: textfield
+        value: '%b %d, %Y at %I:%M %p'
+        lexicon: quip:properties
+      - name: useCss
+        description: quip.prop_reply_usecss_desc
+        type: combo-boolean
+        value: '1'
+        lexicon: quip:properties
+      - name: notifyEmails
+        description: quip.prop_reply_notifyemails_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: recaptcha
+        description: quip.prop_reply_recaptcha_desc
+        type: combo-boolean
+        value: '0'
+        lexicon: quip:properties
+      - name: recaptchaTheme
+        description: quip.prop_reply_recaptchatheme_desc
+        type: list
+        options:
+          - text: quip.opt_red
+            value: red
+          - text: quip.opt_white
+            value: white
+          - text: quip.opt_clean
+            value: clean
+          - text: quip.opt_blackglass
+            value: blackglass
+        value: clean
+        lexicon: quip:properties
+      - name: disableRecaptchaWhenLoggedIn
+        description: quip.prop_reply_disablerecaptchawhenloggedin_desc
+        type: combo-boolean
+        value: '1'
+        lexicon: quip:properties
+      - name: autoConvertLinks
+        description: quip.prop_reply_autoconvertlinks_desc
+        type: combo-boolean
+        value: '1'
+        lexicon: quip:properties
+      - name: extraAutoLinksAttributes
+        description: quip.prop_reply_extraautolinksattributes_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: useGravatar
+        description: quip.prop_reply_usegravatar_desc
+        type: combo-boolean
+        value: '1'
+        lexicon: quip:properties
+      - name: gravatarIcon
+        description: quip.prop_reply_gravataricon_desc
+        type: textfield
+        value: identicon
+        lexicon: quip:properties
+      - name: gravatarSize
+        description: quip.prop_reply_gravatarsize_desc
+        type: textfield
+        value: '50'
+        lexicon: quip:properties
+      - name: tplAddComment
+        description: quip.prop_reply_tpladdcomment_desc
+        type: textfield
+        value: quipAddComment
+        lexicon: quip:properties
+      - name: tplLoginToComment
+        description: quip.prop_reply_tpllogintocomment_desc
+        type: textfield
+        value: quipLoginToComment
+        lexicon: quip:properties
+      - name: tplPreview
+        description: quip.prop_reply_tplpreview_desc
+        type: textfield
+        value: quipPreviewComment
+        lexicon: quip:properties
+      - name: tplReport
+        description: quip.prop_reply_tplreport_desc
+        type: textfield
+        value: quipReport
+        lexicon: quip:properties
+      - name: postAction
+        description: quip.prop_reply_postaction_desc
+        type: textfield
+        value: quip-post
+        lexicon: quip:properties
+      - name: previewAction
+        description: quip.prop_reply_previewaction_desc
+        type: textfield
+        value: quip-preview
+        lexicon: quip:properties
+      - name: idPrefix
+        description: quip.prop_reply_idprefix_desc
+        type: textfield
+        value: qcom
+        lexicon: quip:properties
+      - name: redirectTo
+        description: quip.prop_reply_redirectto_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: redirectToUrl
+        description: quip.prop_reply_redirecttourl_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: debug
+        description: quip.prop_reply_debug_desc
+        type: combo-boolean
+        value: '0'
+        lexicon: quip:properties
+      - name: debugUser
+        description: quip.prop_reply_debuguser_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: debugUserId
+        description: quip.prop_reply_debuguserid_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+  - name: QuipRss
+    description: Generates an RSS of latest comments for a thread or by a user.
+    file: snippet.quiprss.php
+    properties:
+      - name: type
+        description: quip.prop_late_type_desc
+        type: list
+        options:
+          - text: quip.all
+            value: all
+          - text: quip.thread
+            value: thread
+          - text: quip.family
+            value: family
+          - text: quip.user
+            value: user
+        value: all
+        lexicon: quip:properties
+      - name: tpl
+        description: quip.prop_rss_tpl_desc
+        type: textfield
+        value: quipRssComment
+        lexicon: quip:properties
+      - name: containerTpl
+        description: quip.prop_rss_containertpl_desc
+        type: textfield
+        value: quipRssContainer
+        lexicon: quip:properties
+      - name: thread
+        description: quip.prop_late_thread_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: user
+        description: quip.prop_late_user_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: family
+        description: quip.prop_late_family_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: stripTags
+        description: quip.prop_late_striptags_desc
+        type: combo-boolean
+        value: '1'
+        lexicon: quip:properties
+      - name: dateFormat
+        description: quip.prop_late_dateformat_desc
+        type: textfield
+        value: '%b %d, %Y at %I:%M %p'
+        lexicon: quip:properties
+      - name: bodyLimit
+        description: quip.prop_late_bodylimit_desc
+        type: textfield
+        value: '30'
+        lexicon: quip:properties
+      - name: limit
+        description: quip.prop_late_limit_desc
+        type: textfield
+        value: '5'
+        lexicon: quip:properties
+      - name: start
+        description: quip.prop_late_start_desc
+        type: textfield
+        value: '0'
+        lexicon: quip:properties
+      - name: sortBy
+        description: quip.prop_late_sortby_desc
+        type: textfield
+        value: createdon
+        lexicon: quip:properties
+      - name: sortByAlias
+        description: quip.prop_late_sortbyalias_desc
+        type: list
+        options:
+          - text: quip.comment
+            value: quipComment
+          - text: quip.author
+            value: Author
+        value: quipComment
+        lexicon: quip:properties
+      - name: sortDir
+        description: quip.prop_late_sortdir_desc
+        type: list
+        options:
+          - text: quip.ascending
+            value: ASC
+          - text: quip.descending
+            value: DESC
+        value: DESC
+        lexicon: quip:properties
+      - name: contexts
+        description: quip.prop_late_contexts_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: toPlaceholder
+        description: quip.prop_late_toplaceholder_desc
+        type: textfield
+        value: ''
+        lexicon: quip:properties
+      - name: placeholderPrefix
+        description: quip.prop_rss_placeholderprefix_desc
+        type: textfield
+        value: quip.latest
+        lexicon: quip:properties
+plugins:
+    - name: QuipResourceCleaner
+      description: Cleans up threads when a Resource is removed.
+      file: plugin.quipresourcecleaner.php
+      events:
+        - OnEmptyTrash
+systemSettings:
+  - key: emailsFrom
+    value: ''
+    area: email
+  - key: emails_from_name
+    value: Quip
+    area: email
+  - key: emailsTo
+    value: ''
+    area: email
+  - key: emailsReplyTo
+    value: ''
+    area: email
+  - key: allowed_tags
+    value: <b><i><br>
+    area: Tags
+  - key: recaptcha.public_key
+    value: ''
+    area: reCaptcha
+  - key: recaptcha.private_key
+    value: ''
+    area: reCaptcha
+  - key: recaptcha.use_ssl
+    value: '0'
+    type: combo-boolean
+    area: reCaptcha
+menus:
+  - text: quip
+    description: quip_desc
+    action: index
+database:
+  tables:
+    - "\\Quip\\Model\\quipThread"
+    - "\\Quip\\Model\\quipComment"
+    - "\\Quip\\Model\\quipCommentClosure"
+    - "\\Quip\\Model\\quipCommentNotify"
+build:
+  readme: core/components/quip/docs/readme.txt
+  license: core/components/quip/docs/license.txt
+  changelog: core/components/quip/docs/changelog.txt
+  setupOptions: setup.options.php
+  scriptsBefore:
+   - before.acls.php
+  scriptsAfter:
+   - fixranks.resolver.php
+   - setupoptions.resolver.php
+   - oldfiles.resolver.php
+  requires:
+      modx: '>=3.0.0-alpha'

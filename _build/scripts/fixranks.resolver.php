@@ -27,51 +27,52 @@
  * @package quip
  * @subpackage build
  */
-if ($object->xpdo) {
+use Quip\Model\quipComment;
+use Quip\Model\quipCommentClosure;
+use xPDO\Transport\xPDOTransport;
+
+if ($transport->xpdo) {
     switch ($options[xPDOTransport::PACKAGE_ACTION]) {
         case xPDOTransport::ACTION_INSTALL:
         case xPDOTransport::ACTION_UPGRADE:
-            $modx =& $object->xpdo;
-            $modelPath = $modx->getOption('quip.core_path',null,$modx->getOption('core_path').'components/quip/').'model/';
-            $modx->addPackage('quip',$modelPath);
+            $modx =& $transport->xpdo;
 
-            $c = $modx->newQuery('quipComment');
-            $c->sortby('thread','ASC');
-            $comments = $modx->getCollection('quipComment',$c);
+            $c = $modx->newQuery(quipComment::class);
+            $c->sortby('thread', 'ASC');
+            $comments = $modx->getCollection(quipComment::class, $c);
 
             foreach ($comments as $comment) {
                 $id = $comment->get('id');
 
-                $c1 = $modx->getObject('quipCommentClosure',array(
+                $c1 = $modx->getObject(quipCommentClosure::class, [
                     'descendant' => $id,
                     'ancestor' => 0,
-                ));
+                ]);
                 if (empty($c1)) {
-                    $c1 = $modx->newObject('quipCommentClosure');
-                    $c1->set('descendant',$id);
-                    $c1->set('ancestor',0);
+                    $c1 = $modx->newObject(quipCommentClosure::class);
+                    $c1->set('descendant', $id);
+                    $c1->set('ancestor', 0);
                     $c1->save();
                 }
 
-                $c2 = $modx->getObject('quipCommentClosure',array(
+                $c2 = $modx->getObject(quipCommentClosure::class, [
                     'descendant' => $id,
                     'ancestor' => $id,
-                ));
+                ]);
                 if (empty($c2)) {
-                    $c2 = $modx->newObject('quipCommentClosure');
-                    $c2->set('descendant',$id);
-                    $c2->set('ancestor',$id);
+                    $c2 = $modx->newObject(quipCommentClosure::class);
+                    $c2->set('descendant', $id);
+                    $c2->set('ancestor', $id);
                     $c2->save();
                 }
 
                 $currentRank = $comment->get('rank');
                 if (empty($currentRank)) {
-                    $rank = str_pad($id,10,'0',STR_PAD_LEFT);
-                    $comment->set('rank',$rank);
+                    $rank = str_pad($id, 10, '0', STR_PAD_LEFT);
+                    $comment->set('rank', $rank);
                     $comment->save();
                 }
             }
-
 
             break;
     }

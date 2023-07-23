@@ -27,6 +27,9 @@
  * @package quip
  * @subpackage build
  */
+use xPDO\Transport\xPDOTransport;
+use MODX\Revolution\modSystemSetting;
+
 $success= false;
 switch ($options[xPDOTransport::PACKAGE_ACTION]) {
     case xPDOTransport::ACTION_INSTALL:
@@ -38,12 +41,12 @@ switch ($options[xPDOTransport::PACKAGE_ACTION]) {
         );
         foreach ($settings as $key) {
             if (isset($options[$key])) {
-                $setting = $object->xpdo->getObject('modSystemSetting',array('key' => 'quip.'.$key));
+                $setting = $object->xpdo->getObject(modSystemSetting::class, ['key' => 'quip.' . $key]);
                 if ($setting != null) {
-                    $setting->set('value',$options[$key]);
+                    $setting->set('value', $options[$key]);
                     $setting->save();
                 } else {
-                    $object->xpdo->log(xPDO::LOG_LEVEL_ERROR,'[Quip] '.$key.' setting could not be found, so the setting could not be changed.');
+                    $object->xpdo->log(xPDO::LOG_LEVEL_ERROR,'[Quip] ' . $key . ' setting could not be found, so the setting could not be changed.');
                 }
             }
         }

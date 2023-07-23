@@ -149,4 +149,3 @@ if ($toPlaceholder) {
     return '';
 }
 return $output;
-

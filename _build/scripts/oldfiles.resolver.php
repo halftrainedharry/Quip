@@ -22,13 +22,23 @@
  * @package quip
  */
 /**
+ * Remove old files
+ *
  * @package quip
  * @subpackage build
  */
-function getSnippetContent($filename) {
-    $o = file_get_contents($filename);
-    $o = str_replace('<?php','',$o);
-    $o = str_replace('?>','',$o);
-    $o = trim($o);
-    return $o;
+use xPDO\Transport\xPDOTransport;
+
+if ($transport->xpdo) {
+    switch ($options[xPDOTransport::PACKAGE_ACTION]) {
+        case xPDOTransport::ACTION_UPGRADE:
+            $modx =& $transport->xpdo;
+            $corePath = $modx->getOption('quip.core_path', null, $modx->getOption('core_path') . 'components/quip/');
+
+            $opts = array('deleteTop' => true, 'skipDirs' => false, 'extensions' => '*');
+            $modx->cacheManager->deleteTree($corePath . 'chunks/', $opts);
+            $modx->cacheManager->deleteTree($corePath . 'snippets/', $opts);
+            break;
+    }
 }
+return true;
