@@ -27,57 +27,68 @@
  * @package quip
  * @subpackage processors
  */
-class QuipThreadGetListProcessor extends modObjectGetListProcessor {
-    public $classKey = 'quipThread';
-    public $primaryKeyField = 'name';
+namespace Quip\Processors\Mgr\Thread;
+
+use MODX\Revolution\Processors\Model\GetListProcessor;
+use MODX\Revolution\modResource;
+use xPDO\Om\xPDOQuery;
+use xPDO\Om\xPDOObject;
+use Quip\Model\quipThread;
+use Quip\Model\quipComment;
+
+class GetList extends GetListProcessor {
+    public $classKey = quipThread::class;
     public $objectType = 'quip.thread';
+    public $primaryKeyField = 'name';
     public $checkListPermission = false;
-    public $languageTopics = array('quip:default');
+    public $languageTopics = ['quip:default'];
 
     public function prepareQueryBeforeCount(xPDOQuery $c) {
-        $c->leftJoin('modResource','Resource');
+        $c->leftJoin(modResource::class, 'Resource');
 
         $search = $this->getProperty('search');
         if ($search) {
-            $c->where(array(
-                'quipThread.name:LIKE' => '%'.$search.'%',
-                'OR:quipThread.moderator_group:LIKE' => '%'.$search.'%',
-                'OR:Resource.pagetitle:LIKE' => '%'.$search.'%',
-            ),null,2);
+            $c->where([
+                'quipThread.name:LIKE' => '%' . $search . '%',
+                'OR:quipThread.moderator_group:LIKE' => '%' . $search . '%',
+                'OR:Resource.pagetitle:LIKE' => '%' . $search . '%'
+            ], null, 2);
         }
         return $c;
     }
 
     public function prepareQueryAfterCount(xPDOQuery $c) {
         /* get approved comments sql */
-        $subc = $this->modx->newQuery('quipComment');
+        $subc = $this->modx->newQuery(quipComment::class);
         $subc->setClassAlias('ApprovedComments');
         $subc->select('COUNT(*)');
-        $subc->where(array(
+        $subc->where([
             'quipThread.name = ApprovedComments.thread',
             'ApprovedComments.deleted' => 0,
-            'ApprovedComments.approved' => 1,
-        ));
-        $subc->prepare(); $approvedCommentsSql = $subc->toSql();
+            'ApprovedComments.approved' => 1
+        ]);
+        $subc->prepare();
+        $approvedCommentsSql = $subc->toSql();
 
         /* get unapproved comments sql */
-        $subc = $this->modx->newQuery('quipComment');
+        $subc = $this->modx->newQuery(quipComment::class);
         $subc->setClassAlias('ApprovedComments');
         $subc->select('COUNT(*)');
-        $subc->where(array(
+        $subc->where([
             'quipThread.name = ApprovedComments.thread',
             'ApprovedComments.deleted' => 0,
-            'ApprovedComments.approved' => 0,
-        ));
-        $subc->prepare(); $unapprovedCommentsSql = $subc->toSql();
+            'ApprovedComments.approved' => 0
+        ]);
+        $subc->prepare();
+        $unapprovedCommentsSql = $subc->toSql();
 
-        $c->select($this->modx->getSelectColumns('quipThread','quipThread'));
-        $c->select(array(
+        $c->select($this->modx->getSelectColumns(quipThread::class, 'quipThread'));
+        $c->select([
             'Resource.pagetitle',
             'Resource.context_key',
-            '('.$approvedCommentsSql.') AS comments',
-            '('.$unapprovedCommentsSql.') AS unapproved_comments',
-        ));
+            '(' . $approvedCommentsSql . ') AS comments',
+            '(' . $unapprovedCommentsSql . ') AS unapproved_comments'
+        ]);
         return $c;
     }
 
@@ -101,4 +112,3 @@ class QuipThreadGetListProcessor extends modObjectGetListProcessor {
         return $threadArray;
     }
 }
-return 'QuipThreadGetListProcessor';

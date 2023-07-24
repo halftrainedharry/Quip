@@ -22,15 +22,20 @@
  * @package quip
  */
 /**
- * Update a thread.
+ * Get a thread.
  *
  * @package quip
  * @subpackage processors
  */
-class QuipThreadUpdateProcessor extends modObjectUpdateProcessor {
-    public $classKey = 'quipThread';
-    public $languageTopics = array('quip:default');
-    public $permission = 'quip.thread_view';
+namespace Quip\Processors\Mgr\Thread;
+
+use MODX\Revolution\Processors\Model\GetProcessor;
+use Quip\Model\quipThread;
+
+class Get extends GetProcessor {
+    public $classKey = quipThread::class;
     public $objectType = 'quip.thread';
+    public $primaryKeyField = 'name';
+    public $permission = 'quip.thread_view';
+    public $languageTopics = ['quip:default'];
 }
-return 'QuipThreadUpdateProcessor';

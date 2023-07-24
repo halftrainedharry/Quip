@@ -22,16 +22,20 @@
  * @package quip
  */
 /**
- * Get a thread.
+ * Completely truncate a thread of comments.
  *
  * @package quip
  * @subpackage processors
  */
-class QuipThreadGetProcessor extends modObjectGetProcessor {
+namespace Quip\Processors\Mgr\Thread;
+
+use MODX\Revolution\Processors\Model\RemoveProcessor;
+use Quip\Model\quipThread;
+
+class Remove extends RemoveProcessor {
+    public $classKey = quipThread::class;
     public $objectType = 'quip.thread';
-    public $classKey = 'quipThread';
     public $primaryKeyField = 'name';
-    public $permission = 'quip.thread_view';
-    public $languageTopics = array('quip:default');
+    public $permission = 'quip.thread_remove';
+    public $languageTopics = ['quip:default'];
 }
-return 'QuipThreadGetProcessor';

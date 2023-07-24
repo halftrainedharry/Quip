@@ -22,16 +22,36 @@
  * @package quip
  */
 /**
- * Completely truncate a thread of comments.
+ * Completely truncate multiple threads of comments.
  *
  * @package quip
  * @subpackage processors
  */
-class QuipThreadRemoveProcessor extends modObjectRemoveProcessor {
-    public $classKey = 'quipThread';
-    public $languageTopics = array('quip:default');
-    public $permission = 'quip.thread_remove';
-    public $objectType = 'quip.thread';
-    public $primaryKeyField = 'name';
+namespace Quip\Processors\Mgr\Thread;
+
+use MODX\Revolution\modX;
+use MODX\Revolution\Processors\Processor;
+use Quip\Model\quipThread;
+
+class TruncateMultiple extends Processor {
+    public function initialize() {
+        $threads = $this->getProperty('threads');
+        if (empty($threads)) {
+            return $this->modx->lexicon('quip.thread_err_ns');
+        }
+        return parent::initialize();
+    }
+
+    public function process() {
+        $threads = explode(',', $this->getProperty('threads'));
+        foreach ($threads as $threadName) {
+            /** @var $thread quipThread */
+            $thread = $this->modx->getObject(quipThread::class, $threadName);
+            if (empty($thread)) continue;
+
+            $thread->truncate();
+        }
+
+        return $this->success();
+    }
 }
-return 'QuipThreadRemoveProcessor';

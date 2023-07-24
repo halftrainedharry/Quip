@@ -22,34 +22,35 @@
  * @package quip
  */
 /**
- * Completely remove multiple threads.
+ * Completely truncate a thread of comments.
  *
  * @package quip
  * @subpackage processors
  */
-class QuipThreadRemoveMultipleProcessor extends modProcessor {
+namespace Quip\Processors\Mgr\Thread;
+
+use MODX\Revolution\modX;
+use MODX\Revolution\Processors\ModelProcessor;
+use Quip\Model\quipThread;
+
+class Truncate extends ModelProcessor {
+    public $classKey = quipThread::class;
+    public $permission = 'quip.thread_view';
+    public $languageTopics = ['quip:default'];
+
+    /** @var quipThread $thread */
+    public $thread;
+
     public function initialize() {
-        $threads = $this->getProperty('threads');
-        if (empty($threads)) {
-            return $this->modx->lexicon('quip.thread_err_ns');
-        }
+        $thread = $this->getProperty('thread');
+        if (empty($thread)) return $this->modx->lexicon('quip.thread_err_ns');
+        $this->thread = $this->modx->getObject($this->classKey, $thread);
+        if (empty($this->thread)) return $this->modx->lexicon('quip.thread_err_nf');
+        if (!$this->thread->checkPolicy('truncate')) return $this->modx->lexicon('access_denied');
         return parent::initialize();
     }
-    public function process() {
-        $threads = explode(',',$this->getProperty('threads'));
-        foreach ($threads as $threadName) {
-            /** @var $thread quipThread */
-            $thread = $this->modx->getObject('quipThread',$threadName);
-            if (empty($thread)) {
-                $this->modx->log(modX::LOG_LEVEL_ERROR,'[Quip] Thread not found to remove with name `'.$threadName.'`');
-                continue;
-            }
-            if ($thread->checkPolicy('remove')) {
-                $thread->remove();
-            }
-        }
 
-        return $this->success();
+    public function process() {
+        return $this->thread->truncate() ? $this->success() : $this->failure('quip.thread_err_truncate');
     }
 }
-return 'QuipThreadRemoveMultipleProcessor';
