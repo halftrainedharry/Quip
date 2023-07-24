@@ -136,7 +136,7 @@ class quipThread extends \Quip\Model\quipThread
             array (
                 'alias' => 'moderated',
                 'primary' => false,
-                'unique' => true,
+                'unique' => false,
                 'type' => 'BTREE',
                 'columns' => 
                 array (
@@ -152,7 +152,7 @@ class quipThread extends \Quip\Model\quipThread
             array (
                 'alias' => 'moderator_group',
                 'primary' => false,
-                'unique' => true,
+                'unique' => false,
                 'type' => 'BTREE',
                 'columns' => 
                 array (
@@ -168,7 +168,7 @@ class quipThread extends \Quip\Model\quipThread
             array (
                 'alias' => 'resource',
                 'primary' => false,
-                'unique' => true,
+                'unique' => false,
                 'type' => 'BTREE',
                 'columns' => 
                 array (

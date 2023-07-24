@@ -64,7 +64,7 @@ class quipCommentNotify extends \Quip\Model\quipCommentNotify
             array (
                 'alias' => 'thread',
                 'primary' => false,
-                'unique' => true,
+                'unique' => false,
                 'type' => 'BTREE',
                 'columns' => 
                 array (
@@ -80,7 +80,7 @@ class quipCommentNotify extends \Quip\Model\quipCommentNotify
             array (
                 'alias' => 'user',
                 'primary' => false,
-                'unique' => true,
+                'unique' => false,
                 'type' => 'BTREE',
                 'columns' => 
                 array (
