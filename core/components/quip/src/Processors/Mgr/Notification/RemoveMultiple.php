@@ -27,7 +27,13 @@
  * @package quip
  * @subpackage processors
  */
-class QuipThreadNotificationRemoveMultipleProcessor extends modProcessor {
+namespace Quip\Processors\Mgr\Notification;
+
+use MODX\Revolution\modX;
+use MODX\Revolution\Processors\Processor;
+use Quip\Model\quipCommentNotify;
+
+class RemoveMultiple extends Processor {
     public function initialize() {
         $notifications = $this->getProperty('notifications');
         if (empty($notifications)) {
@@ -35,13 +41,14 @@ class QuipThreadNotificationRemoveMultipleProcessor extends modProcessor {
         }
         return parent::initialize();
     }
+
     public function process() {
-        $notifications = explode(',',$this->getProperty('notifications'));
+        $notifications = explode(',', $this->getProperty('notifications'));
         foreach ($notifications as $notificationId) {
             /** @var $notification quipCommentNotify */
-            $notification = $this->modx->getObject('quipCommentNotify',$notificationId);
+            $notification = $this->modx->getObject(quipCommentNotify::class, $notificationId);
             if (empty($notification)) {
-                $this->modx->log(modX::LOG_LEVEL_ERROR,'[Quip] Notification not found to remove with ID `'.$notificationId.'`');
+                $this->modx->log(modX::LOG_LEVEL_ERROR, '[Quip] Notification not found to remove with ID `' . $notificationId . '`');
                 continue;
             }
             $notification->remove();
@@ -50,4 +57,3 @@ class QuipThreadNotificationRemoveMultipleProcessor extends modProcessor {
         return $this->success();
     }
 }
-return 'QuipThreadNotificationRemoveMultipleProcessor';

@@ -27,33 +27,41 @@
  * @package quip
  * @subpackage processors
  */
-class QuipThreadNotificationGetListProcessor extends modObjectGetListProcessor {
-    public $classKey = 'quipCommentNotify';
+namespace Quip\Processors\Mgr\Notification;
+
+use MODX\Revolution\Processors\Model\GetListProcessor;
+use xPDO\Om\xPDOQuery;
+use xPDO\Om\xPDOObject;
+use Quip\Model\quipCommentNotify;
+use Quip\Model\quipThread;
+
+class GetList extends GetListProcessor {
+    public $classKey = quipCommentNotify::class;
     public $objectType = 'quip.notification';
-    public $languageTopics = array('quip:default');
     public $defaultSortField = 'thread';
+    public $languageTopics = ['quip:default'];
 
     public function prepareQueryBeforeCount(xPDOQuery $c) {
-        $c->leftJoin('quipThread','Thread');
+        $c->leftJoin(quipThread::class, 'Thread');
 
-        $c->where(array(
-            'quipCommentNotify.thread:=' => $this->getProperty('thread'),
-        ));
+        $c->where([
+            'quipCommentNotify.thread:=' => $this->getProperty('thread')
+        ]);
 
         $search = $this->getProperty('search');
         if ($search) {
-            $c->where(array(
-                'quipCommentNotify.email:LIKE' => '%'.$search.'%',
-            ),null,2);
+            $c->where([
+                'quipCommentNotify.email:LIKE' => '%' . $search . '%'
+            ], null, 2);
         }
         return $c;
     }
 
     public function prepareQueryAfterCount(xPDOQuery $c) {
-        $c->select($this->modx->getSelectColumns('quipCommentNotify','quipCommentNotify'));
-        $c->select(array(
-            'Thread.notify_emails',
-        ));
+        $c->select($this->modx->getSelectColumns(quipCommentNotify::class, 'quipCommentNotify'));
+        $c->select([
+            'Thread.notify_emails'
+        ]);
         return $c;
     }
 
@@ -64,8 +72,7 @@ class QuipThreadNotificationGetListProcessor extends modObjectGetListProcessor {
     public function prepareRow(xPDOObject $object) {
         $notifyArray = $object->toArray();
         $notifyArray['cls'] = '';
-        $notifyArray['createdon'] = !empty($notifyArray['createdon']) ? strftime('%b %d, %Y %H:%M %p',strtotime($notifyArray['createdon'])) : '';
+        $notifyArray['createdon'] = !empty($notifyArray['createdon']) ? strftime('%b %d, %Y %H:%M %p', strtotime($notifyArray['createdon'])) : '';
         return $notifyArray;
     }
 }
-return 'QuipThreadNotificationGetListProcessor';

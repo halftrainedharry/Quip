@@ -27,9 +27,13 @@
  * @package quip
  * @subpackage processors
  */
-class QuipThreadNotificationRemoveProcessor extends modObjectRemoveProcessor {
-    public $classKey = 'quipCommentNotify';
-    public $languageTopics = array('quip:default');
+namespace Quip\Processors\Mgr\Notification;
+
+use MODX\Revolution\Processors\Model\RemoveProcessor;
+use Quip\Model\quipCommentNotify;
+
+class Remove extends RemoveProcessor {
+    public $classKey = quipCommentNotify::class;
     public $objectType = 'quip.notification';
+    public $languageTopics = ['quip:default'];
 }
-return 'QuipThreadNotificationRemoveProcessor';
