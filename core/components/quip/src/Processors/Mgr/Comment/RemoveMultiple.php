@@ -22,14 +22,20 @@
  * @package quip
  */
 /**
- * Unapprove multiple comments
+ * Permanently remove comments
  *
  * @package quip
  * @subpackage processors
  */
-class QuipCommentUnApproveMultipleProcessor extends modProcessor {
+namespace Quip\Processors\Mgr\Comment;
+
+use MODX\Revolution\modX;
+use MODX\Revolution\Processors\Processor;
+use Quip\Model\quipComment;
+
+class RemoveMultiple extends Processor {
     public function checkPermissions() {
-        return $this->modx->hasPermission('quip.comment_approve');
+        return $this->modx->hasPermission('quip.comment_remove');
     }
 
     public function initialize() {
@@ -41,18 +47,17 @@ class QuipCommentUnApproveMultipleProcessor extends modProcessor {
     }
 
     public function process() {
-        $comments = explode(',',$this->getProperty('comments'));
+        $comments = explode(',', $this->getProperty('comments'));
         foreach ($comments as $commentId) {
             /** @var $comment quipComment */
-            $comment = $this->modx->getObject('quipComment',$commentId);
+            $comment = $this->modx->getObject(quipComment::class, $commentId);
             if (empty($comment)) {
-                $this->modx->log(modX::LOG_LEVEL_ERROR,'[Quip] Comment not found to unapprove with ID `'.$commentId.'`');
+                $this->modx->log(modX::LOG_LEVEL_ERROR, '[Quip] Comment not found to remove with ID `' . $commentId . '`');
                 continue;
             }
-            $comment->unapprove();
+            $comment->remove();
         }
 
         return $this->success();
     }
 }
-return 'QuipCommentUnApproveMultipleProcessor';

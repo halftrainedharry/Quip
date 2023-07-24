@@ -22,33 +22,42 @@
  * @package quip
  */
 /**
- * Approve a comment
+ * Delete multiple comments
  *
  * @package quip
  * @subpackage processors
  */
-class QuipCommentApproveProcessor extends modObjectProcessor {
-    public $classKey = 'quipComment';
-    public $permission = 'quip.comment_approve';
-    public $languageTopics = array('quip:default');
+namespace Quip\Processors\Mgr\Comment;
 
-    /** @var quipComment $comment */
-    public $comment;
+use MODX\Revolution\modX;
+use MODX\Revolution\Processors\Processor;
+use Quip\Model\quipComment;
+
+class UndeleteMultiple extends Processor {
+    public function checkPermissions() {
+        return $this->modx->hasPermission('quip.comment_remove');
+    }
 
     public function initialize() {
-        $id = $this->getProperty('id');
-        if (empty($id)) return $this->modx->lexicon('quip.comment_err_ns');
-        $this->comment = $this->modx->getObject($this->classKey,$id);
-        if (empty($this->comment)) return $this->modx->lexicon('quip.comment_err_nf');
+        $comments = $this->getProperty('comments');
+        if (empty($comments)) {
+            return $this->modx->lexicon('quip.comment_err_ns');
+        }
         return parent::initialize();
     }
 
     public function process() {
-        if ($this->comment->approve() === false) {
-            return $this->failure($this->modx->lexicon('quip.comment_err_save'));
+        $comments = explode(',', $this->getProperty('comments'));
+        foreach ($comments as $commentId) {
+            /** @var $comment quipComment */
+            $comment = $this->modx->getObject(quipComment::class, $commentId);
+            if (empty($comment)) {
+                $this->modx->log(modX::LOG_LEVEL_ERROR, '[Quip] Comment not found to undelete with ID `' . $commentId . '`');
+                continue;
+            }
+            $comment->undelete();
         }
 
         return $this->success();
     }
 }
-return 'QuipCommentApproveProcessor';

@@ -27,23 +27,27 @@
  * @package quip
  * @subpackage processors
  */
-class QuipCommentUpdateProcessor extends modObjectUpdateProcessor {
-    public $classKey = 'quipComment';
-    public $languageTopics = array('quip:default');
-    public $permission = 'quip.comment_update';
+namespace Quip\Processors\Mgr\Comment;
+
+use MODX\Revolution\Processors\Model\UpdateProcessor;
+use Quip\Model\quipComment;
+
+class Update extends UpdateProcessor {
+    public $classKey = quipComment::class;
     public $objectType = 'quip.comment';
+    public $permission = 'quip.comment_update';
+    public $languageTopics = ['quip:default'];
 
     public function beforeSave() {
         /* sanity checks - strip out iframe/javascript */
         $body = $this->getProperty('body');
-        $body = preg_replace("/<script(.*)<\/script>/i",'',$body);
-        $body = preg_replace("/<iframe(.*)<\/iframe>/i",'',$body);
-        $body = preg_replace("/<iframe(.*)\/>/i",'',$body);
+        $body = preg_replace("/<script(.*)<\/script>/i", '', $body);
+        $body = preg_replace("/<iframe(.*)<\/iframe>/i", '', $body);
+        $body = preg_replace("/<iframe(.*)\/>/i", '', $body);
         $body = nl2br($body);
 
-        $this->object->set('editedon',strftime('%Y-%m-%d %H:%M:%S'));
-        $this->object->set('body',$body);
+        $this->object->set('editedon', strftime('%Y-%m-%d %H:%M:%S'));
+        $this->object->set('body', $body);
         return parent::beforeSave();
     }
 }
-return 'QuipCommentUpdateProcessor';

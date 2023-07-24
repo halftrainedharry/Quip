@@ -25,10 +25,32 @@
  * @package quip
  * @subpackage processors
  */
-class QuipCommentRemoveProcessor extends modObjectRemoveProcessor {
-    public $classKey = 'quipComment';
-    public $languageTopics = array('quip:default');
+namespace Quip\Processors\Mgr\Comment;
+
+use MODX\Revolution\Processors\ModelProcessor;
+use Quip\Model\quipComment;
+
+class Undelete extends ModelProcessor {
+    public $classKey = quipComment::class;
     public $permission = 'quip.comment_remove';
-    public $objectType = 'quip.comment';
+    public $languageTopics = ['quip:default'];
+
+    /** @var quipComment $comment */
+    public $comment;
+
+    public function initialize() {
+        $id = $this->getProperty('id');
+        if (empty($id)) return $this->modx->lexicon('quip.comment_err_ns');
+        $this->comment = $this->modx->getObject($this->classKey, $id);
+        if (empty($this->comment)) return $this->modx->lexicon('quip.comment_err_nf');
+        return parent::initialize();
+    }
+
+    public function process() {
+        if ($this->comment->undelete() === false) {
+            return $this->failure($this->modx->lexicon('quip.comment_err_undelete'));
+        }
+
+        return $this->success();
+    }
 }
-return 'QuipCommentRemoveProcessor';

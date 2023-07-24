@@ -27,36 +27,47 @@
  * @package quip
  * @subpackage processors
  */
-class QuipCommentGetUnapprovedProcessor extends modObjectGetListProcessor {
-    public $classKey = 'quipComment';
-    public $languageTopics = array('quip:default');
-    public $permission = 'quip.comment_list';
+namespace Quip\Processors\Mgr\Comment;
+
+use MODX\Revolution\Processors\Model\GetListProcessor;
+use MODX\Revolution\modResource;
+use MODX\Revolution\modUser;
+use xPDO\Om\xPDOQuery;
+use xPDO\Om\xPDOObject;
+use Quip\Model\quipComment;
+use Quip\Model\quipThread;
+
+class GetUnapproved extends GetListProcessor {
+    public $classKey = quipComment::class;
+    public $objectType = 'quip.thread';
+
+    public $primaryKeyField = 'name';
     public $defaultSortField = 'createdon';
     public $defaultSortDirection = 'DESC';
+
+    public $permission = 'quip.comment_list';
     public $checkListPermission = false;
-    public $objectType = 'quip.thread';
-    public $primaryKeyField = 'name';
+    public $languageTopics = ['quip:default'];
 
     /** @var quipThread $thread */
     public $thread;
     /** @var string $defaultCls */
     public $defaultCls = '';
 
-
     public function initialize() {
         $initialized = parent::initialize();
-        $this->setDefaultProperties(array(
+        $this->setDefaultProperties([
             'combo' => false,
             'limit' => false,
             'deleted' => 0,
             'search' => false,
             'family' => false,
-            'thread' => false,
-        ));
+            'thread' => false
+        ]);
 
         $thread = $this->getProperty('thread');
         if (!empty($thread)) {
-            $this->thread = $this->modx->getObject('quipThread',$thread);
+            $this->thread = $this->modx->getObject(quipThread::class, $thread);
             if (empty($this->thread)) return $this->modx->lexicon('quip.thread_err_nf');
             if (!$this->thread->checkPolicy('view')) return $this->modx->lexicon('access_denied');
         }
@@ -68,50 +79,50 @@ class QuipCommentGetUnapprovedProcessor extends modObjectGetListProcessor {
         $ugns = $this->modx->user->getUserGroupNames();
         $userGroupNames = '';
         foreach ($ugns as $ugn) {
-            $userGroupNames .= '"'.$ugn.'",';
+            $userGroupNames .= '"' . $ugn . '",';
         }
-        $userGroupNames = rtrim($userGroupNames,',');
+        $userGroupNames = rtrim($userGroupNames, ',');
 
-        $c->leftJoin('modUser','Author');
-        $c->leftJoin('modResource','Resource');
-        $c->innerJoin('quipThread','Thread');
-        $c->where(array(
-            'quipComment.deleted' => $this->getProperty('deleted',false),
-            'quipComment.approved' => false,
-        ));
+        $c->leftJoin(modUser::class, 'Author');
+        $c->leftJoin(modResource::class, 'Resource');
+        $c->innerJoin(quipThread::class, 'Thread');
+        $c->where([
+            'quipComment.deleted' => $this->getProperty('deleted', false),
+            'quipComment.approved' => false
+        ]);
         /* handle moderator permissions */
-        $c->andCondition(array('(
+        $c->andCondition(['(
             Thread.moderated = 0
-                OR Thread.moderator_group IN ('.$userGroupNames.')
-                OR "'.$this->modx->user->get('username').'" IN (Thread.moderators)
-        )'));
+                OR Thread.moderator_group IN (' . $userGroupNames . ')
+                OR "' . $this->modx->user->get('username') . '" IN (Thread.moderators)
+        )']);
         $thread = $this->getProperty('thread');
         if (!empty($thread)) {
-            $c->where(array(
-                'quipComment.thread' => $thread,
-            ));
+            $c->where([
+                'quipComment.thread' => $thread
+            ]);
         }
         return $c;
     }
 
     public function prepareQueryAfterCount(xPDOQuery $c) {
-        $subc = $this->modx->newQuery('quipComment');
+        $subc = $this->modx->newQuery(quipComment::class);
         $subc->setClassAlias('CommentCount');
         $subc->select('COUNT(CommentCount.id)');
         $subc->where('CommentCount.thread = quipComment.thread');
-        $subc->where(array(
+        $subc->where([
             'CommentCount.deleted' => 0,
-            'CommentCount.approved' => 1,
-        ));
+            'CommentCount.approved' => 1
+        ]);
         $subc->prepare();
         $commentsSql = $subc->toSql();
 
-        $c->select($this->modx->getSelectColumns('quipComment','quipComment'));
-        $c->select(array(
+        $c->select($this->modx->getSelectColumns(quipComment::class, 'quipComment'));
+        $c->select([
             'Author.username',
             'Resource.pagetitle',
-            '('.$commentsSql.') AS comments',
-        ));
+            '(' . $commentsSql . ') AS comments'
+        ]);
         return $c;
     }
 
@@ -124,11 +135,11 @@ class QuipCommentGetUnapprovedProcessor extends modObjectGetListProcessor {
             $canRemove = $canRemove && $this->thread->checkPolicy('comment_remove');
             $canUpdate = $canUpdate && $this->thread->checkPolicy('comment_update');
         }
-        $cls = array();
+        $cls = [];
         if ($canApprove) $cls[] = 'papprove';
         if ($canUpdate) $cls[] = 'pupdate';
         if ($canRemove) $cls[] = 'premove';
-        $this->defaultCls = implode(',',$cls);
+        $this->defaultCls = implode(',', $cls);
         return $list;
     }
 
@@ -144,10 +155,9 @@ class QuipCommentGetUnapprovedProcessor extends modObjectGetListProcessor {
         }
 
         if (empty($commentArray['username'])) $commentArray['username'] = $commentArray['name'];
-        $commentArray['body'] = str_replace('<br />','',$commentArray['body']);
-        $commentArray['createdon'] = strftime('%a %b %d, %Y %I:%M %p',strtotime($commentArray['createdon']));
+        $commentArray['body'] = str_replace('<br />', '', $commentArray['body']);
+        $commentArray['createdon'] = strftime('%a %b %d, %Y %I:%M %p', strtotime($commentArray['createdon']));
         $commentArray['cls'] = $this->defaultCls;
         return $commentArray;
     }
 }
-return 'QuipCommentGetUnapprovedProcessor';
