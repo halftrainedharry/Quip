@@ -4,9 +4,9 @@ Quip.grid.Notification = function(config) {
     this.sm = new Ext.grid.CheckboxSelectionModel();
     this.ident = config.ident || 'quip-'+Ext.id();
     Ext.applyIf(config,{
-        url: Quip.config.connector_url
+        url: MODx.config.connector_url
         ,baseParams: {
-            action: 'mgr/thread/notification/getList'
+            action: 'Quip\\Processors\\Mgr\\Notification\\GetList'
             ,thread: config.thread || null
         }
         ,fields: ['id','thread','email','createdon','cls']
@@ -114,7 +114,7 @@ Ext.extend(Quip.grid.Notification,MODx.grid.Grid,{
         MODx.Ajax.request({
             url: this.config.url
             ,params: {
-                action: 'mgr/thread/notification/removeMultiple'
+                action: 'Quip\\Processors\\Mgr\\Notification\\RemoveMultiple'
                 ,notifications: cs
             }
             ,listeners: {
@@ -132,7 +132,7 @@ Ext.extend(Quip.grid.Notification,MODx.grid.Grid,{
             ,text: _('quip.notification_remove_confirm')
             ,url: this.config.url
             ,params: {
-                action: 'mgr/thread/notification/remove'
+                action: 'Quip\\Processors\\Mgr\\Notification\\Remove'
                 ,id: this.menu.record.id
             }
             ,listeners: {
@@ -172,15 +172,13 @@ Ext.extend(Quip.grid.Notification,MODx.grid.Grid,{
 });
 Ext.reg('quip-grid-notification',Quip.grid.Notification);
 
-
-
 Quip.window.CreateNotification = function(config) {
     config = config || {};
     Ext.applyIf(config,{
         title: _('quip.notification_create')
-        ,url: Quip.config.connector_url
+        ,url: MODx.config.connector_url
         ,baseParams: {
-            action: 'mgr/thread/notification/create'
+            action: 'Quip\\Processors\\Mgr\\Notification\\Create'
         }
         ,width: 600
         ,fields: [{

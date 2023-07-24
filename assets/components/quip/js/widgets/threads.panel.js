@@ -42,7 +42,7 @@ Quip.panel.Threads = function(config) {
                     ,cls: 'main-wrapper'
                     ,preventRender: true
                     ,baseParams: {
-                        action: 'mgr/comment/getUnapproved'
+                        action: 'Quip\\Processors\\Mgr\\Comment\\GetUnapproved'
                     }
                 }]
             },{
@@ -70,8 +70,8 @@ Quip.grid.Thread = function(config) {
     this.sm = new Ext.grid.CheckboxSelectionModel();
     this.ident = config.ident || Ext.id();
     Ext.applyIf(config,{
-        url: Quip.config.connector_url
-        ,baseParams: { action: 'mgr/thread/getList' }
+        url: MODx.config.connector_url
+        ,baseParams: { action: 'Quip\\Processors\\Mgr\\Thread\\GetList' }
         ,fields: ['name','comments','unapproved_comments','pagetitle','url','perm']
         ,paging: true
         ,autosave: false
@@ -188,15 +188,15 @@ Ext.extend(Quip.grid.Thread,MODx.grid.Grid,{
         return cs;
     }
     ,manageThread: function() {
-        location.href = '?a='+MODx.request.a+'&action=thread&thread='+this.menu.record.name;
+        location.href = '?a=thread&namespace=quip&thread='+this.menu.record.name;
     }
-    ,truncateThread: function() {        
+    ,truncateThread: function() {
         MODx.msg.confirm({
             title: _('warning')
             ,text: _('quip.thread_truncate_confirm')
             ,url: this.config.url
             ,params: {
-                action: 'mgr/thread/truncate'
+                action: 'Quip\\Processors\\Mgr\\Thread\\Truncate'
                 ,thread: this.menu.record.name
             }
             ,listeners: {
@@ -213,7 +213,7 @@ Ext.extend(Quip.grid.Thread,MODx.grid.Grid,{
             ,text: _('quip.thread_truncate_selected_confirm')
             ,url: this.config.url
             ,params: {
-                action: 'mgr/thread/truncateMultiple'
+                action: 'Quip\\Processors\\Mgr\\Thread\\TruncateMultiple'
                 ,threads: cs
             }
             ,listeners: {
@@ -231,7 +231,7 @@ Ext.extend(Quip.grid.Thread,MODx.grid.Grid,{
             ,text: _('quip.thread_remove_confirm')
             ,url: this.config.url
             ,params: {
-                action: 'mgr/thread/remove'
+                action: 'Quip\\Processors\\Mgr\\Thread\\Remove'
                 ,name: this.menu.record.name
             }
             ,listeners: {
@@ -248,7 +248,7 @@ Ext.extend(Quip.grid.Thread,MODx.grid.Grid,{
             ,text: _('quip.thread_remove_selected_confirm')
             ,url: this.config.url
             ,params: {
-                action: 'mgr/thread/removeMultiple'
+                action: 'Quip\\Processors\\Mgr\\Thread\\RemoveMultiple'
                 ,threads: cs
             }
             ,listeners: {
@@ -265,7 +265,7 @@ Ext.extend(Quip.grid.Thread,MODx.grid.Grid,{
         var m = [];
         if (this.getSelectionModel().getCount() > 1) {
             var rs = this.getSelectionModel().getSelections();
-            
+
             if (this.verifyPerm('truncate',rs)) {
                 m.push({
                     text: _('quip.thread_truncate_selected')

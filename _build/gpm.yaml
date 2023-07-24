@@ -743,7 +743,7 @@ systemSettings:
 menus:
   - text: quip
     description: quip_desc
-    action: index
+    action: home
 database:
   tables:
     - "\\Quip\\Model\\quipThread"

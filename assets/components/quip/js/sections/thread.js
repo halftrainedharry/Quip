@@ -1,5 +1,5 @@
 Ext.onReady(function() {
-    MODx.load({ 
+    MODx.load({
         xtype: 'quip-page-thread'
         ,thread: MODx.request.thread
     });
@@ -23,7 +23,7 @@ Quip.page.Thread = function(config) {
             text: _('quip.back_to_threads')
             ,id: 'quip-btn-back'
             ,handler: function() {
-                location.href = '?a='+MODx.request.a+'&action=home';
+                MODx.loadPage('?a=home&namespace=quip');
             }
             ,scope: this
         }]
@@ -32,7 +32,7 @@ Quip.page.Thread = function(config) {
             ,renderTo: 'quip-panel-thread-div'
             ,thread: config.thread
         }]
-    }); 
+    });
     Quip.page.Thread.superclass.constructor.call(this,config);
 };
 Ext.extend(Quip.page.Thread,MODx.Component);

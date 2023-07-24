@@ -2,7 +2,7 @@ Quip.panel.Thread = function(config) {
     config = config || {};
     Ext.applyIf(config,{
         id: 'quip-panel-thread'
-        ,url: Quip.config.connector_url
+        ,url: MODx.config.connector_url
         ,cls: 'container form-with-labels'
         ,baseParams: {}
         ,items: [{
@@ -93,7 +93,7 @@ Ext.extend(Quip.panel.Thread,MODx.FormPanel,{
         MODx.Ajax.request({
             url: this.config.url
             ,params: {
-                action: 'mgr/thread/get'
+                action: 'Quip\\Processors\\Mgr\\Thread\\Get'
                 ,name: this.config.thread
             }
             ,listeners: {

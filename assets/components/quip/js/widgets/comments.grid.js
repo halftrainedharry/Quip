@@ -4,9 +4,9 @@ Quip.grid.Comments = function(config) {
     this.sm = new Ext.grid.CheckboxSelectionModel();
     this.ident = config.ident || 'quip-'+Ext.id();
     Ext.applyIf(config,{
-        url: Quip.config.connector_url
-        ,baseParams: { 
-            action: 'mgr/comment/getList'
+        url: MODx.config.connector_url
+        ,baseParams: {
+            action: 'Quip\\Processors\\Mgr\\Comment\\GetList'
             ,thread: config.thread || null
             ,family: config.family || null
         }
@@ -139,7 +139,7 @@ Ext.extend(Quip.grid.Comments,MODx.grid.Grid,{
         var cls = 'quip-posted';
         if (!rec.data.approved) cls += ' quip-unapproved';
         if (rec.data.deleted) cls += ' quip-deleted';
-        
+
         return '<div class="'+cls+'">'+v+'<br /><span class="quip-ip">'+rec.data.ip+'</span></div>';
     }
     ,toggleDeleted: function(btn,e) {
@@ -158,11 +158,11 @@ Ext.extend(Quip.grid.Comments,MODx.grid.Grid,{
     ,approveSelected: function(btn,e) {
         var cs = this.getSelectedAsList();
         if (cs === false) return false;
-        
+
         MODx.Ajax.request({
             url: this.config.url
             ,params: {
-                action: 'mgr/comment/approveMultiple'
+                action: 'Quip\\Processors\\Mgr\\Comment\\ApproveMultiple'
                 ,comments: cs
             }
             ,listeners: {
@@ -181,7 +181,7 @@ Ext.extend(Quip.grid.Comments,MODx.grid.Grid,{
         MODx.Ajax.request({
             url: this.config.url
             ,params: {
-                action: 'mgr/comment/unapproveMultiple'
+                action: 'Quip\\Processors\\Mgr\\Comment\\UnapproveMultiple'
                 ,comments: cs
             }
             ,listeners: {
@@ -201,7 +201,7 @@ Ext.extend(Quip.grid.Comments,MODx.grid.Grid,{
         MODx.Ajax.request({
             url: this.config.url
             ,params: {
-                action: 'mgr/comment/deleteMultiple'
+                action: 'Quip\\Processors\\Mgr\\Comment\\DeleteMultiple'
                 ,comments: cs
             }
             ,listeners: {
@@ -220,7 +220,7 @@ Ext.extend(Quip.grid.Comments,MODx.grid.Grid,{
         MODx.Ajax.request({
             url: this.config.url
             ,params: {
-                action: 'mgr/comment/undeleteMultiple'
+                action: 'Quip\\Processors\\Mgr\\Comment\\UndeleteMultiple'
                 ,comments: cs
             }
             ,listeners: {
@@ -240,7 +240,7 @@ Ext.extend(Quip.grid.Comments,MODx.grid.Grid,{
         MODx.Ajax.request({
             url: this.config.url
             ,params: {
-                action: 'mgr/comment/removeMultiple'
+                action: 'Quip\\Processors\\Mgr\\Comment\\RemoveMultiple'
                 ,comments: cs
             }
             ,listeners: {
@@ -282,7 +282,7 @@ Ext.extend(Quip.grid.Comments,MODx.grid.Grid,{
         MODx.Ajax.request({
             url: this.config.url
             ,params: {
-                action: 'mgr/comment/approve'
+                action: 'Quip\\Processors\\Mgr\\Comment\\Approve'
                 ,id: this.menu.record.id
             }
             ,listeners: {
@@ -294,7 +294,7 @@ Ext.extend(Quip.grid.Comments,MODx.grid.Grid,{
         MODx.Ajax.request({
             url: this.config.url
             ,params: {
-                action: 'mgr/comment/unapprove'
+                action: 'Quip\\Processors\\Mgr\\Comment\\Unapprove'
                 ,id: this.menu.record.id
             }
             ,listeners: {
@@ -308,7 +308,7 @@ Ext.extend(Quip.grid.Comments,MODx.grid.Grid,{
             ,text: _('quip.comment_delete_confirm')
             ,url: this.config.url
             ,params: {
-                action: 'mgr/comment/delete'
+                action: 'Quip\\Processors\\Mgr\\Comment\\Delete'
                 ,id: this.menu.record.id
             }
             ,listeners: {
@@ -320,7 +320,7 @@ Ext.extend(Quip.grid.Comments,MODx.grid.Grid,{
         MODx.Ajax.request({
             url: this.config.url
             ,params: {
-                action: 'mgr/comment/undelete'
+                action: 'Quip\\Processors\\Mgr\\Comment\\Undelete'
                 ,id: this.menu.record.id
             }
             ,listeners: {
@@ -334,7 +334,7 @@ Ext.extend(Quip.grid.Comments,MODx.grid.Grid,{
             ,text: _('quip.comment_remove_confirm')
             ,url: this.config.url
             ,params: {
-                action: 'mgr/comment/remove'
+                action: 'Quip\\Processors\\Mgr\\Comment\\Remove'
                 ,id: this.menu.record.id
             }
             ,listeners: {
@@ -434,9 +434,9 @@ Quip.window.UpdateComment = function(config) {
     config = config || {};
     Ext.applyIf(config,{
         title: _('quip.comment_update')
-        ,url: Quip.config.connector_url
+        ,url: MODx.config.connector_url
         ,baseParams: {
-            action: 'mgr/comment/update'
+            action: 'Quip\\Processors\\Mgr\\Comment\\Update'
         }
         ,width: 600
         ,fields: [{
@@ -446,17 +446,17 @@ Quip.window.UpdateComment = function(config) {
             xtype: 'textfield'
             ,fieldLabel: _('quip.name')
             ,name: 'name'
-            ,anchor: '90%'        
+            ,anchor: '90%'
         },{
             xtype: 'textfield'
             ,fieldLabel: _('quip.email')
             ,name: 'email'
-            ,anchor: '90%'        
+            ,anchor: '90%'
         },{
             xtype: 'textfield'
             ,fieldLabel: _('quip.website')
             ,name: 'website'
-            ,anchor: '90%'        
+            ,anchor: '90%'
         },{
             xtype: 'statictextfield'
             ,fieldLabel: _('quip.ip')
