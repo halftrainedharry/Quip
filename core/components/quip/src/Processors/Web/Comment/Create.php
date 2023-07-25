@@ -23,7 +23,7 @@
  */
 /**
  * Create a comment
- * 
+ *
  * @var Quip $quip
  * @var modX $modx
  * @var array $fields

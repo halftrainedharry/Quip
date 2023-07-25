@@ -28,7 +28,7 @@
  * @var modX $modx
  * @var array $fields
  * @var QuipThreadController $this
- * 
+ *
  * @package quip
  * @subpackage processors
  */
