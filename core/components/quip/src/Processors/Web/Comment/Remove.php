@@ -23,40 +23,53 @@
  */
 /**
  * Remove a comment
- *
- * @var Quip $quip
- * @var modX $modx
- * @var array $fields
- * @var QuipThreadController $this
- *
- * @package quip
- * @subpackage processors
  */
-$errors = array();
-if (empty($_REQUEST['quip_comment'])) {
-    $errors['message'] = $modx->lexicon('quip.comment_err_ns');
-    return $errors;
+namespace Quip\Processors\Web\Comment;
+
+use MODX\Revolution\modX;
+use Quip\Quip;
+use Quip\Snippets\BaseSnippet;
+use Quip\Model\quipComment;
+
+class Remove {
+    protected $modx = null;
+    protected $quip = null;
+    protected $snippet = null;
+
+    function __construct(BaseSnippet &$snippet) {
+        $this->snippet = &$snippet;
+        $this->modx = &$snippet->modx;
+        $this->quip = &$snippet->quip;
+    }
+
+    public function process($fields) {
+        $errors = [];
+        if (empty($_REQUEST['quip_comment'])) {
+            $errors['message'] = $this->modx->lexicon('quip.comment_err_ns');
+            return $errors;
+        }
+
+        /** @var quipComment $comment */
+        $comment = $this->modx->getObject(quipComment::class, $_REQUEST['quip_comment']);
+        if (empty($comment)) {
+            $errors['message'] = $this->modx->lexicon('quip.comment_err_nf');
+            return $errors;
+        }
+
+        /* only allow authors or moderators to remove comments */
+        if ($comment->get('author') != $this->modx->user->get('id') && !$this->snippet->isModerator) {
+            $errors['message'] = $this->modx->lexicon('quip.comment_err_nf');
+            return $errors;
+        }
+
+        $comment->set('deleted', true);
+        $comment->set('deletedon', strftime('%Y-%m-%d %H:%M:%S'));
+        $comment->set('deletedby', $this->modx->user->get('id'));
+
+        if (empty($errors) && $comment->save() === false) {
+            $errors['message'] = $this->modx->lexicon('quip.comment_err_remove');
+        }
+
+        return $errors;
+    }
 }
-
-/** @var quipComment $comment */
-$comment = $modx->getObject('quipComment',$_REQUEST['quip_comment']);
-if (empty($comment)) {
-    $errors['message'] = $modx->lexicon('quip.comment_err_nf');
-    return $errors;
-}
-
-/* only allow authors or moderators to remove comments */
-if ($comment->get('author') != $modx->user->get('id') && !$this->isModerator) {
-    $errors['message'] = $modx->lexicon('quip.comment_err_nf');
-    return $errors;
-}
-
-$comment->set('deleted',true);
-$comment->set('deletedon',strftime('%Y-%m-%d %H:%M:%S'));
-$comment->set('deletedby',$modx->user->get('id'));
-
-if (empty($errors) && $comment->save() === false) {
-    $errors['message'] = $modx->lexicon('quip.comment_err_remove');
-}
-
-return $errors;

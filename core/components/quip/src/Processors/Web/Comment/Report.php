@@ -23,62 +23,78 @@
  */
 /**
  * Report a comment
- *
- * @var Quip $quip
- * @var modX $modx
- * @var array $fields
- * @var QuipThreadController $this
- *
- * @package quip
- * @subpackage processors
  */
-$errors = array();
-if (empty($_REQUEST['quip_comment'])) {
-    $errors['message'] = $modx->lexicon('quip.comment_err_ns');
-    return $errors;
+namespace Quip\Processors\Web\Comment;
+
+use MODX\Revolution\modX;
+use MODX\Revolution\modUser;
+use MODX\Revolution\Mail\modMail;
+use MODX\Revolution\Mail\modPHPMailer;
+use Quip\Quip;
+use Quip\Snippets\BaseSnippet;
+use Quip\Model\quipComment;
+
+class Remove {
+    protected $modx = null;
+    protected $quip = null;
+    protected $snippet = null;
+
+    function __construct(BaseSnippet &$snippet) {
+        $this->snippet = &$snippet;
+        $this->modx = &$snippet->modx;
+        $this->quip = &$snippet->quip;
+    }
+
+    public function process($fields) {
+        $errors = [];
+        if (empty($_REQUEST['quip_comment'])) {
+            $errors['message'] = $this->modx->lexicon('quip.comment_err_ns');
+            return $errors;
+        }
+
+        /* get comment */
+        $c = $this->modx->newQuery(quipComment::class);
+        $c->leftJoin(modUser::class, 'Author');
+        $c->select($this->modx->getSelectColumns(quipComment::class, 'quipComment'));
+        $c->select($this->modx->getSelectColumns(modUser::class, 'Author', '', ['username']));
+        $c->where([
+            'id' => $_REQUEST['quip_comment']
+        ]);
+        /** @var quipComment $comment */
+        $comment = $this->modx->getObject(quipComment::class, $c);
+        if ($comment == null) {
+            $errors['message'] = $this->modx->lexicon('quip.comment_err_nf');
+            return $errors;
+        }
+
+        $emailTo = $this->modx->getOption('quip.emailsTo', null, $this->modx->getOption('emailsender'));
+        if (empty($emailTo)) {
+            $errors['message'] = $this->modx->lexicon('quip.no_email_to_specified');
+            return $errors;
+        }
+
+        $properties = $comment->toArray();
+        $properties['url'] = $comment->makeUrl('', '', ['scheme' => 'full']);
+        if (empty($properties['username'])) $properties['username'] = $comment->get('name');
+        $body = $this->modx->lexicon('quip.spam_email', $properties);
+
+        /* send spam report */
+        $this->modx->getService('mail', modPHPMailer::class);
+        $emailFrom = $this->modx->getOption('quip.emailsFrom', null, $emailTo);
+        $emailReplyTo = $this->modx->getOption('quip.emailsReplyTo', null, $emailFrom);
+        $this->modx->mail->set(modMail::MAIL_BODY, $body);
+        $this->modx->mail->set(modMail::MAIL_FROM, $emailFrom);
+        $this->modx->mail->set(modMail::MAIL_FROM_NAME, 'Quip');
+        $this->modx->mail->set(modMail::MAIL_SENDER, 'Quip');
+        $this->modx->mail->set(modMail::MAIL_SUBJECT, $this->modx->lexicon('quip.spam_email_subject'));
+        $this->modx->mail->address('to', $emailTo);
+        $this->modx->mail->address('reply-to', $emailReplyTo);
+        $this->modx->mail->setHTML(true);
+        if (!$this->modx->mail->send()) {
+            //$errors['message'] = $this->modx->lexicon('error_sending_email_to') . ': ' . $emailTo;
+        }
+        $this->modx->mail->reset();
+
+        return $errors;
+    }
 }
-
-/* get comment */
-$c = $modx->newQuery('quipComment');
-$c->leftJoin('modUser','Author');
-$c->select($modx->getSelectColumns('quipComment','quipComment'));
-$c->select($modx->getSelectColumns('modUser','Author','',array('username')));
-$c->where(array(
-    'id' => $_REQUEST['quip_comment'],
-));
-/** @var quipComment $comment */
-$comment = $modx->getObject('quipComment',$c);
-if ($comment == null) {
-    $errors['message'] = $modx->lexicon('quip.comment_err_nf');
-    return $errors;
-}
-
-$emailTo = $modx->getOption('quip.emailsTo',null,$modx->getOption('emailsender'));
-if (empty($emailTo)) {
-    $errors['message'] = $modx->lexicon('quip.no_email_to_specified');
-    return $errors;
-}
-
-$properties = $comment->toArray();
-$properties['url'] = $comment->makeUrl('','',array('scheme' => 'full'));
-if (empty($properties['username'])) $properties['username'] = $comment->get('name');
-$body = $modx->lexicon('quip.spam_email',$properties);
-
-/* send spam report */
-$modx->getService('mail', 'mail.modPHPMailer');
-$emailFrom = $modx->getOption('quip.emailsFrom',null,$emailTo);
-$emailReplyTo = $modx->getOption('quip.emailsReplyTo',null,$emailFrom);
-$modx->mail->set(modMail::MAIL_BODY, $body);
-$modx->mail->set(modMail::MAIL_FROM, $emailFrom);
-$modx->mail->set(modMail::MAIL_FROM_NAME, 'Quip');
-$modx->mail->set(modMail::MAIL_SENDER, 'Quip');
-$modx->mail->set(modMail::MAIL_SUBJECT, $modx->lexicon('quip.spam_email_subject'));
-$modx->mail->address('to',$emailTo);
-$modx->mail->address('reply-to',$emailReplyTo);
-$modx->mail->setHTML(true);
-if (!$modx->mail->send()) {
-    //$errors['message'] = $modx->lexicon('error_sending_email_to').': '.$emailTo;
-}
-$modx->mail->reset();
-
-return $errors;
