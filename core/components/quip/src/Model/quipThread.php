@@ -2,6 +2,13 @@
 namespace Quip\Model;
 
 use xPDO\xPDO;
+use MODX\Revolution\modX;
+use MODX\Revolution\modUser;
+use MODX\Revolution\modUserProfile;
+use MODX\Revolution\modUserGroup;
+use MODX\Revolution\modUserGroupMember;
+use MODX\Revolution\Mail\modMail;
+use Quip\Model\quipComment;
 
 /**
  * Class quipThread
@@ -41,7 +48,7 @@ class quipThread extends \xPDO\Om\xPDOObject
             $moderatorGroups = $this->trimArray($this->get('moderator_group'));
             $moderators = $this->trimArray($this->get('moderators'));
             $inModeratorGroup = !empty($moderatorGroups) && !empty($this->xpdo->user) ? $this->xpdo->user->isMember($moderatorGroups) : false;
-            $access = $inModeratorGroup || in_array($this->xpdo->user->get('username'),$moderators);
+            $access = $inModeratorGroup || in_array($this->xpdo->user->get('username'), $moderators);
         } else {
             $access = $this->xpdo->user->isMember('Administrator');
         }
@@ -78,11 +85,11 @@ class quipThread extends \xPDO\Om\xPDOObject
      * @param string $delimiter
      * @return string
      */
-    protected function trimArray($array,$delimiter = ',') {
+    protected function trimArray($array, $delimiter = ',') {
         if (!is_array($array)) {
-            $array = explode($delimiter,$array);
+            $array = explode($delimiter, $array);
         }
-        $ret = array();
+        $ret = [];
         foreach ($array as $i) {
             $ret[] = trim($i);
         }
@@ -97,10 +104,10 @@ class quipThread extends \xPDO\Om\xPDOObject
      * @param array $options An array of options for URL building
      * @return string The created URL
      */
-    public function makeUrl($resource = 0,$params = array(),array $options = array()) {
+    public function makeUrl($resource = 0, $params = [], array $options = []) {
         if (empty($resource)) $resource = $this->get('resource');
         if (empty($params)) $params = $this->get('existing_params');
-        if (empty($params)) $params = array();
+        if (empty($params)) $params = [];
         if (empty($options['context_key'])) {
             $options['context_key'] = $this->get('context_key');
             if (empty($options['context_key'])) {
@@ -108,8 +115,8 @@ class quipThread extends \xPDO\Om\xPDOObject
             }
         }
 
-        $scheme= $this->xpdo->context->getOption('scheme','',$options);
-        return $this->xpdo->makeUrl($resource,$options['context_key'],$params,$scheme);
+        $scheme= $this->xpdo->context->getOption('scheme', '', $options);
+        return $this->xpdo->makeUrl($resource, $options['context_key'], $params, $scheme);
     }
 
     /**
@@ -118,33 +125,33 @@ class quipThread extends \xPDO\Om\xPDOObject
      * @param array $scriptProperties
      * @return bool True if changed
      */
-    public function sync(array $scriptProperties = array()) {
+    public function sync(array $scriptProperties = []) {
         $changed = false;
-        $scriptProperties['idPrefix'] = $this->xpdo->getOption('idPrefix',$scriptProperties,'qcom');
+        $scriptProperties['idPrefix'] = $this->xpdo->getOption('idPrefix', $scriptProperties, 'qcom');
 
         /* change idPrefix if set */
         if (!empty($scriptProperties['idPrefix']) && $this->get('idprefix') != $scriptProperties['idPrefix']) {
-            $this->set('idprefix',$scriptProperties['idPrefix']);
+            $this->set('idprefix', $scriptProperties['idPrefix']);
             $changed = true;
         }
         /* change moderate if diff */
         if (isset($scriptProperties['moderate']) && $this->get('moderated') != $scriptProperties['moderate']) {
-            $this->set('moderated',$scriptProperties['moderate']);
+            $this->set('moderated', $scriptProperties['moderate']);
             $changed = true;
         }
         /* change moderators if diff */
         if (!empty($scriptProperties['moderators']) && $this->get('moderators') != $scriptProperties['moderators']) {
-            $this->set('moderators',$scriptProperties['moderators']);
+            $this->set('moderators', $scriptProperties['moderators']);
             $changed = true;
         }
         /* change moderatorGroup if diff */
         if (!empty($scriptProperties['moderatorGroup']) && $this->get('moderator_group') != $scriptProperties['moderatorGroup']) {
-            $this->set('moderator_group',$scriptProperties['moderatorGroup']);
+            $this->set('moderator_group', $scriptProperties['moderatorGroup']);
             $changed = true;
         }
         /* change notify_emails if diff */
         if (!empty($scriptProperties['notifyEmails']) && $this->get('notify_emails') != $scriptProperties['notifyEmails']) {
-            $this->set('notify_emails',$scriptProperties['notifyEmails']);
+            $this->set('notify_emails', $scriptProperties['notifyEmails']);
             $changed = true;
         }
 
@@ -161,9 +168,9 @@ class quipThread extends \xPDO\Om\xPDOObject
      */
     protected function _loadLexicon() {
         if (!$this->xpdo->lexicon) {
-            $this->xpdo->lexicon = $this->xpdo->getService('lexicon','modLexicon');
+            $this->xpdo->lexicon = $this->xpdo->getService('lexicon', 'modLexicon');
             if (empty($this->xpdo->lexicon)) {
-                $this->xpdo->log(xPDO::LOG_LEVEL_ERROR,'[Quip] Could not load MODx lexicon.');
+                $this->xpdo->log(xPDO::LOG_LEVEL_ERROR, '[Quip] Could not load MODx lexicon.');
                 return false;
             }
         }
@@ -177,14 +184,14 @@ class quipThread extends \xPDO\Om\xPDOObject
      */
     public function getModeratorEmails() {
         $moderatorNames = $this->get('moderators');
-        $moderatorNames = explode(',',$moderatorNames);
-        $moderators = array();
+        $moderatorNames = explode(',', $moderatorNames);
+        $moderators = [];
         foreach ($moderatorNames as $name) {
-            $c = $this->xpdo->newQuery('modUser');
-            $c->innerJoin('modUserProfile','Profile');
-            $c->select(array('modUser.id','Profile.email'));
-            $c->where(array('username' => $name));
-            $user = $this->xpdo->getObject('modUser',$c);
+            $c = $this->xpdo->newQuery(modUser::class);
+            $c->innerJoin(modUserProfile::class, 'Profile');
+            $c->select(['modUser.id', 'Profile.email']);
+            $c->where(['username' => $name]);
+            $user = $this->xpdo->getObject(modUser::class, $c);
             if ($user) {
                 $moderators[] = $user->get('email');
             }
@@ -192,17 +199,17 @@ class quipThread extends \xPDO\Om\xPDOObject
 
         /* now get usergroup moderators */
         $moderatorGroup = $this->get('moderator_group');
-        $c = $this->xpdo->newQuery('modUserProfile');
-        $c->innerJoin('modUser','User');
-        $c->innerJoin('modUserGroupMember','UserGroupMembers','User.id = UserGroupMembers.member');
-        $c->innerJoin('modUserGroup','UserGroup','UserGroup.id = UserGroupMembers.user_group');
-        $c->where(array(
-            'UserGroup.name' => $moderatorGroup,
-        ));
-        $members = $this->xpdo->getCollection('modUserProfile',$c);
+        $c = $this->xpdo->newQuery(modUserProfile::class);
+        $c->innerJoin(modUser::class, 'User');
+        $c->innerJoin(modUserGroupMember::class, 'UserGroupMembers', 'User.id = UserGroupMembers.member');
+        $c->innerJoin(modUserGroup::class, 'UserGroup', 'UserGroup.id = UserGroupMembers.user_group');
+        $c->where([
+            'UserGroup.name' => $moderatorGroup
+        ]);
+        $members = $this->xpdo->getCollection(modUserProfile::class, $c);
         foreach ($members as $member) {
             $email = $member->get('email');
-            if (!empty($email)) array_push($moderators,$email);
+            if (!empty($email)) array_push($moderators, $email);
         }
         $moderators = array_unique($moderators);
 
@@ -231,18 +238,18 @@ class quipThread extends \xPDO\Om\xPDOObject
 
         /* get email body/subject */
         $properties = $comment->toArray();
-        $properties['url'] = $comment->makeUrl('',array(),array('scheme' => 'full'));
-        $body = $this->xpdo->lexicon('quip.email_notify',$properties);
+        $properties['url'] = $comment->makeUrl('', [], ['scheme' => 'full']);
+        $body = $this->xpdo->lexicon('quip.email_notify', $properties);
         $subject = $this->xpdo->lexicon('quip.email_notify_subject');
 
         /* send notifications */
         $success = true;
         $notifyEmails = $this->get('notify_emails');
-        $emails = explode(',',$notifyEmails);
+        $emails = explode(',', $notifyEmails);
 
         /* send notifications to notify_emails subjects */
         if (!empty($emails)) {
-            $this->sendEmail($subject,$body,$emails);
+            $this->sendEmail($subject, $body, $emails);
         }
 
         /* now send to notified users */
@@ -251,7 +258,7 @@ class quipThread extends \xPDO\Om\xPDOObject
         foreach ($notifiees as $notification) {
             $email = $notification->get('email');
             /* remove invalid emails */
-            if (empty($email) || strpos($email,'@') == false) {
+            if (empty($email) || strpos($email, '@') == false) {
                 $notification->remove();
                 continue;
             }
@@ -260,7 +267,7 @@ class quipThread extends \xPDO\Om\xPDOObject
                 continue;
             }
 
-            $notification->send($comment,$properties);
+            $notification->send($comment, $properties);
         }
 
         return $success;
@@ -273,32 +280,32 @@ class quipThread extends \xPDO\Om\xPDOObject
      * @param string $to
      * @return bool
      */
-    protected function sendEmail($subject,$body,$to) {
+    protected function sendEmail($subject, $body, $to) {
         if (!$this->_loadLexicon()) return false;
         $this->xpdo->lexicon->load('quip:emails');
 
         $this->xpdo->getService('mail', 'mail.modPHPMailer');
         if (!$this->xpdo->mail) return false;
 
-        $emailFrom = $this->xpdo->context->getOption('quip.emailsFrom',$this->xpdo->context->getOption('emailsender'));
-        $emailReplyTo = $this->xpdo->context->getOption('quip.emailsReplyTo',$this->xpdo->context->getOption('emailsender'));
+        $emailFrom = $this->xpdo->context->getOption('quip.emailsFrom', $this->xpdo->context->getOption('emailsender'));
+        $emailReplyTo = $this->xpdo->context->getOption('quip.emailsReplyTo', $this->xpdo->context->getOption('emailsender'));
 
         /* allow multiple to addresses */
         if (!is_array($to)) {
-            $to = explode(',',$to);
+            $to = explode(',', $to);
         }
 
         $success = false;
         foreach ($to as $emailAddress) {
-            if (empty($emailAddress) || strpos($emailAddress,'@') == false) continue;
+            if (empty($emailAddress) || strpos($emailAddress, '@') == false) continue;
 
-            $this->xpdo->mail->set(modMail::MAIL_BODY,$body);
-            $this->xpdo->mail->set(modMail::MAIL_FROM,$emailFrom);
-            $this->xpdo->mail->set(modMail::MAIL_FROM_NAME,$this->xpdo->context->getOption('quip.emails_from_name','Quip'));
-            $this->xpdo->mail->set(modMail::MAIL_SENDER,$emailFrom);
-            $this->xpdo->mail->set(modMail::MAIL_SUBJECT,$subject);
-            $this->xpdo->mail->address('to',$emailAddress);
-            $this->xpdo->mail->address('reply-to',$emailReplyTo);
+            $this->xpdo->mail->set(modMail::MAIL_BODY, $body);
+            $this->xpdo->mail->set(modMail::MAIL_FROM, $emailFrom);
+            $this->xpdo->mail->set(modMail::MAIL_FROM_NAME, $this->xpdo->context->getOption('quip.emails_from_name', 'Quip'));
+            $this->xpdo->mail->set(modMail::MAIL_SENDER, $emailFrom);
+            $this->xpdo->mail->set(modMail::MAIL_SUBJECT, $subject);
+            $this->xpdo->mail->address('to', $emailAddress);
+            $this->xpdo->mail->address('reply-to', $emailReplyTo);
             $this->xpdo->mail->setHTML(true);
             $success = $this->xpdo->mail->send();
             $this->xpdo->mail->reset();
@@ -325,19 +332,19 @@ class quipThread extends \xPDO\Om\xPDOObject
     public function truncate() {
         if (!$this->checkPolicy('truncate')) return false;
 
-        $c = $this->xpdo->newQuery('quipComment');
-        $c->where(array(
-            'thread' => $this->get('name'),
-        ));
-        $comments = $this->xpdo->getCollection('quipComment',$c);
+        $c = $this->xpdo->newQuery(quipComment::class);
+        $c->where([
+            'thread' => $this->get('name')
+        ]);
+        $comments = $this->xpdo->getCollection(quipComment::class, $c);
 
         $truncated = true;
         /** @var quipComment $comment */
         foreach ($comments as $comment) {
-            $comment->set('deleted',true);
-            $comment->set('deletedon',strftime('%Y-%m-%d %H:%M:%S'));
+            $comment->set('deleted', true);
+            $comment->set('deletedon', strftime('%Y-%m-%d %H:%M:%S'));
             if ($this->xpdo instanceof modX) {
-                $comment->set('deletedby',$this->xpdo->user->get('id'));
+                $comment->set('deletedby', $this->xpdo->user->get('id'));
             }
             $truncated = $comment->save();
         }
