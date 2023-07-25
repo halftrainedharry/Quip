@@ -28,17 +28,22 @@
  */
 namespace Quip;
 
-class quipHooks {
+use xPDO\xPDO;
+use MODX\Revolution\modX;
+use MODX\Revolution\modSnippet;
+use Quip\Quip;
+
+class QuipHooks {
     /**
      * @var array $errors A collection of all the processed errors so far.
      * @access public
      */
-    public $errors = array();
+    public $errors = [];
     /**
      * @var array $hooks A collection of all the processed hooks so far.
      * @access public
      */
-    public $hooks = array();
+    public $hooks = [];
     /**
      * @var modX $modx A reference to the modX instance.
      * @access public
@@ -58,19 +63,18 @@ class quipHooks {
     /**
      * @var array
      */
-    public $fields = array();
+    public $fields = [];
 
     /**
-     * The constructor for the quipHooks class
+     * The constructor for the QuipHooks class
      *
      * @param Quip $quip A reference to the Quip class instance.
      * @param array $config Optional. An array of configuration parameters.
      */
-    function __construct(Quip &$quip,array $config = array()) {
+    function __construct(Quip &$quip, array $config = []) {
         $this->quip =& $quip;
         $this->modx =& $quip->modx;
-        $this->config = array_merge(array(
-        ),$config);
+        $this->config = array_merge([], $config);
     }
 
     /**
@@ -82,15 +86,15 @@ class quipHooks {
      * @param array $customProperties Any other custom properties to load into a custom hook
      * @return array An array of field name => value pairs.
      */
-    public function loadMultiple($hooks,array $fields = array(),array $customProperties = array()) {
-        if (empty($hooks)) return array();
-        if (is_string($hooks)) $hooks = explode(',',$hooks);
+    public function loadMultiple($hooks, array $fields = [], array $customProperties = []) {
+        if (empty($hooks)) return [];
+        if (is_string($hooks)) $hooks = explode(',', $hooks);
 
-        $this->hooks = array();
+        $this->hooks = [];
         $this->fields =& $fields;
         foreach ($hooks as $hook) {
             $hook = trim($hook);
-            $success = $this->load($hook,$this->fields,$customProperties);
+            $success = $this->load($hook, $this->fields, $customProperties);
             if (!$success) return $this->hooks;
             /* dont proceed if hook fails */
         }
@@ -106,19 +110,19 @@ class quipHooks {
      * @param array $customProperties Any other custom properties to load into a custom hook.
      * @return boolean True if hook was successful.
      */
-    public function load($hook,array $fields = array(),array $customProperties = array()) {
+    public function load($hook, array $fields = [], array $customProperties = []) {
         $success = false;
         if (!empty($fields)) $this->fields =& $fields;
         $this->hooks[] = $hook;
 
-        $reserved = array('load','_process','__construct','getErrorMessage');
-        if (method_exists($this,$hook) && !in_array($hook,$reserved)) {
+        $reserved = ['load', '_process', '__construct', 'getErrorMessage'];
+        if (method_exists($this, $hook) && !in_array($hook, $reserved)) {
             /* built-in hooks */
             $success = $this->$hook($this->fields);
 
-        } else if ($snippet = $this->modx->getObject('modSnippet',array('name' => $hook))) {
+        } else if ($snippet = $this->modx->getObject(modSnippet::class, ['name' => $hook])) {
             /* custom snippet hook */
-            $properties = array_merge($this->quip->config,$customProperties);
+            $properties = array_merge($this->quip->config, $customProperties);
             $properties['quip'] =& $this->quip;
             $properties['hook'] =& $this;
             $properties['fields'] = $this->fields;
@@ -127,15 +131,15 @@ class quipHooks {
 
         } else {
             /* no hook found */
-            $this->modx->log(modX::LOG_LEVEL_ERROR,'[Quip] Could not find hook "'.$hook.'".');
+            $this->modx->log(modX::LOG_LEVEL_ERROR, '[Quip] Could not find hook "' . $hook . '".');
             $success = true;
         }
 
         if (is_array($success) && !empty($success)) {
-            $this->errors = array_merge($this->errors,$success);
+            $this->errors = array_merge($this->errors, $success);
             $success = false;
         } else if ($success != true) {
-            $this->errors[$hook] .= ' '.$success;
+            $this->errors[$hook] .= ' ' . $success;
             $success = false;
         }
         return $success;
@@ -149,7 +153,7 @@ class quipHooks {
      * @return string The concatenated error message
      */
     public function getErrorMessage($delim = "\n") {
-        return implode($delim,$this->errors);
+        return implode($delim, $this->errors);
     }
 
     /**
@@ -160,7 +164,7 @@ class quipHooks {
      * @param string $value The error message.
      * @return string The added error message with the error wrapper.
      */
-    public function addError($key,$value) {
+    public function addError($key, $value) {
         $this->errors[$key] .= $value;
         return $this->errors[$key];
     }
@@ -172,7 +176,7 @@ class quipHooks {
      * @param mixed $value The value to set to the field.
      * @return mixed The set value.
      */
-    public function setValue($key,$value) {
+    public function setValue($key, $value) {
         $this->fields[$key] = $value;
         return $this->fields[$key];
     }
@@ -182,9 +186,9 @@ class quipHooks {
      *
      * @param array $values A key/name pair of fields and values to set.
      */
-    public function setValues(array $values = array()) {
+    public function setValues(array $values = []) {
         foreach ($values as $key => $value) {
-            $this->setValue($key,$value);
+            $this->setValue($key, $value);
         }
     }
 
@@ -195,7 +199,7 @@ class quipHooks {
      * @return mixed The value of the key, or null if non-existent.
      */
     public function getValue($key) {
-        if (array_key_exists($key,$this->fields)) {
+        if (array_key_exists($key, $this->fields)) {
             return $this->fields[$key];
         }
         return null;
@@ -216,7 +220,7 @@ class quipHooks {
      * @return bool Always false
      */
     public function testFail() {
-        $this->addError('comment','Fail!');
+        $this->addError('comment', 'Fail!');
         return false;
     }
 
@@ -236,17 +240,17 @@ class quipHooks {
      * @param array $fields An array of cleaned POST fields
      * @return boolean False if unsuccessful.
      */
-    public function redirect(array $fields = array()) {
+    public function redirect(array $fields = []) {
         if (empty($this->quip->config['redirectTo'])) return false;
         $redirectParams = !empty($this->quip->config['redirectParams']) ? $this->quip->config['redirectParams'] : '';
         if (!empty($redirectParams)) {
-            $prefix = $this->modx->getOption('placeholderPrefix',$this->quip->config,'fi.');
-            $this->modx->setPlaceholders($fields,$prefix);
-            $this->modx->parser->processElementTags('',$redirectParams,true,true);
+            $prefix = $this->modx->getOption('placeholderPrefix', $this->quip->config, 'fi.');
+            $this->modx->setPlaceholders($fields, $prefix);
+            $this->modx->parser->processElementTags('', $redirectParams, true, true);
             $redirectParams = $this->modx->fromJSON($redirectParams);
             if (empty($redirectParams)) $redirectParams = '';
         }
-        $url = $this->modx->makeUrl($this->quip->config['redirectTo'],'',$redirectParams,'abs');
+        $url = $this->modx->makeUrl($this->quip->config['redirectTo'], '', $redirectParams, 'abs');
         $this->setRedirectUrl($url);
         return true;
     }
@@ -258,9 +262,9 @@ class quipHooks {
      * @param array $placeholders An array of placeholders to replace with values
      * @return string The parsed string
      */
-    public function _process($str,array $placeholders = array()) {
+    public function _process($str, array $placeholders = []) {
         foreach ($placeholders as $k => $v) {
-            $str = str_replace('[[+'.$k.']]',$v,$str);
+            $str = str_replace('[[+' . $k . ']]', $v, $str);
         }
         return $str;
     }
@@ -281,23 +285,41 @@ class quipHooks {
      * @param array $fields An array of cleaned POST fields
      * @return boolean True if email was successfully sent.
      */
-    public function math(array $fields = array()) {
-        $op1Field = $this->modx->getOption('mathOp1Field',$this->quip->config,'op1');
-        if (empty($fields[$op1Field])) { $this->errors[$op1Field] = $this->modx->lexicon('quip.math_field_nf',array('field' => $op1Field)); return false; }
-        $op2Field = $this->modx->getOption('mathOp2Field',$this->quip->config,'op2');
-        if (empty($fields[$op2Field])) { $this->errors[$op2Field] = $this->modx->lexicon('quip.math_field_nf',array('field' => $op2Field)); return false; }
-        $operatorField = $this->modx->getOption('mathOperatorField',$this->quip->config,'operator');
-        if (empty($fields[$operatorField])) { $this->errors[$operatorField] = $this->modx->lexicon('quip.math_field_nf',array('field' => $operatorField)); return false; }
-        $mathField = $this->modx->getOption('mathField',$this->quip->config,'math');
-        if (empty($fields[$mathField])) { $this->errors[$mathField] = $this->modx->lexicon('quip.math_field_nf',array('field' => $mathField)); return false; }
+    public function math(array $fields = []) {
+        $op1Field = $this->modx->getOption('mathOp1Field', $this->quip->config, 'op1');
+        if (empty($fields[$op1Field])) {
+            $this->errors[$op1Field] = $this->modx->lexicon('quip.math_field_nf', ['field' => $op1Field]);
+            return false;
+        }
+        $op2Field = $this->modx->getOption('mathOp2Field', $this->quip->config, 'op2');
+        if (empty($fields[$op2Field])) {
+            $this->errors[$op2Field] = $this->modx->lexicon('quip.math_field_nf', ['field' => $op2Field]);
+            return false;
+        }
+        $operatorField = $this->modx->getOption('mathOperatorField', $this->quip->config, 'operator');
+        if (empty($fields[$operatorField])) {
+            $this->errors[$operatorField] = $this->modx->lexicon('quip.math_field_nf', ['field' => $operatorField]);
+            return false;
+        }
+        $mathField = $this->modx->getOption('mathField', $this->quip->config, 'math');
+        if (empty($fields[$mathField])) {
+            $this->errors[$mathField] = $this->modx->lexicon('quip.math_field_nf', ['field' => $mathField]);
+            return false;
+        }
 
         $answer = false;
         $op1 = (int)$fields[$op1Field];
         $op2 = (int)$fields[$op2Field];
         switch ($fields[$operatorField]) {
-            case '+': $answer = $op1 + $op2; break;
-            case '-': $answer = $op1 - $op2; break;
-            case '*': $answer = $op1 * $op2; break;
+            case '+':
+                $answer = $op1 + $op2;
+                break;
+            case '-':
+                $answer = $op1 - $op2;
+                break;
+            case '*':
+                $answer = $op1 * $op2;
+                break;
         }
         $guess = (int)$fields[$mathField];
         $passed = (boolean)($guess == $answer);

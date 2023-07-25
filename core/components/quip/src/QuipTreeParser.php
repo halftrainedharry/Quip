@@ -28,6 +28,8 @@
  */
 namespace Quip;
 
+use Quip\Quip;
+
 class QuipTreeParser {
     /**
      * The last node output
@@ -38,7 +40,7 @@ class QuipTreeParser {
      * The current open thread node
      * @var array $openThread
      */
-    protected $openThread = array();
+    protected $openThread = [];
     /**
      * The current collected output
      * @var string $output
@@ -54,7 +56,7 @@ class QuipTreeParser {
      * @param Quip $quip A reference to the Quip instance
      * @param array $config An array of configuration options
      */
-    function __construct(Quip &$quip,array $config = array()) {
+    function __construct(Quip &$quip, array $config = []) {
         $this->quip =& $quip;
         $this->config = $config;
     }
@@ -66,18 +68,18 @@ class QuipTreeParser {
      * @param string $tpl The chunk to use for each node
      * @return string The outputted content
      */
-    public function parse(array $array,$tpl = '') {
+    public function parse(array $array, $tpl = '') {
         /* set a value not possible in a LEVEL column to allow the
          * first row to know it's "firstness" */
         $this->last = null;
         $this->tpl = $tpl;
 
         /* add a couple dummy "rows" to cap off formatting */
-        $array[] = array();
-        $array[] = array();
+        $array[] = [];
+        $array[] = [];
 
         /* invoke our formatting function via callback */
-        $output = array_map(array($this,'_iterate'),$array);
+        $output = array_map([$this, '_iterate'], $array);
 
         /* output the results */
         $output = implode("\n", $output);
@@ -129,7 +131,7 @@ class QuipTreeParser {
                 // Close & chunkify the openThread only if we are on the root level
                 $item .= $this->getOpenThread(0);
                 //Set current thread as new root
-                $this->setOpenThread($current,0);
+                $this->setOpenThread($current, 0);
             } else {
                 //Set current thread as the last open thread
                 $this->setOpenThread($current, $depth);
@@ -148,7 +150,7 @@ class QuipTreeParser {
      */
     protected function setOpenThread($string, $depth) {
         if (!empty($this->openThread[$depth]) && $depth > 0) {
-            if (empty($this->openThread[$depth-1])) $this->openThread[$depth-1] = array('children' => '');
+            if (empty($this->openThread[$depth-1])) $this->openThread[$depth-1] = ['children' => ''];
             $this->openThread[$depth - 1]['children'] .= $this->quip->getChunk($this->tpl, $this->openThread[$depth]);
         }
         unset($this->openThread[$depth]);
