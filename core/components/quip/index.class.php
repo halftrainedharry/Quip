@@ -21,43 +21,50 @@
  *
  * @package quip
  */
-require_once dirname(__FILE__) . '/model/quip/quip.class.php';
+use Quip\Quip;
+use Quip\Model\quipComment;
+
 abstract class QuipManagerController extends modExtraManagerController {
     /** @var Quip $quip */
     public $quip;
-    public function initialize() {
-        $this->quip = new Quip($this->modx);
 
-        $this->addCss($this->quip->config['cssUrl'].'mgr.css');
-        $this->addJavascript($this->quip->config['jsUrl'].'quip.js');
+    public function initialize() {
+        $this->quip = $this->modx->services->get('quip');
+
+        $this->addCss($this->quip->config['cssUrl'] . 'mgr.css');
+        $this->addJavascript($this->quip->config['jsUrl'] . 'quip.js');
+
         $this->addHtml('<script type="text/javascript">
         Ext.onReady(function() {
-            Quip.config = '.$this->modx->toJSON($this->quip->config).';
-            Quip.config.connector_url = "'.$this->quip->config['connectorUrl'].'";
+            Quip.config = ' . $this->modx->toJSON($this->quip->config) . ';
         });
         </script>');
 
         $this->checkForApproval();
         $this->checkForRejection();
+
         return parent::initialize();
     }
     public function getLanguageTopics() {
-        return array('quip:default');
+        return ['quip:default'];
     }
-    public function checkPermissions() { return true;}
+
+    public function checkPermissions() {
+        return true;
+    }
 
     public function checkForApproval() {
         if (!empty($_REQUEST['quip_approve'])) {
             /** @var quipComment $comment */
-            $comment = $this->modx->getObject('quipComment',$_REQUEST['quip_approve']);
+            $comment = $this->modx->getObject(quipComment::class, $_REQUEST['quip_approve']);
             if ($comment && $comment->approve()) {
                 $commentArray = $comment->toArray();
-                $commentArray['createdon'] = strftime('%b %d, %Y',strtotime($comment->get('createdon')));
+                $commentArray['createdon'] = strftime('%b %d, %Y', strtotime($comment->get('createdon')));
                 $this->modx->regClientStartupHTMLBlock('<script type="text/javascript">
         Ext.onReady(function() {
             MODx.msg.status({
-                title: "'.$this->modx->lexicon('quip.comment_approved').'"
-                ,message: "'.$this->modx->lexicon('quip.comment_approved_msg',$commentArray).'"
+                title: "' . $this->modx->lexicon('quip.comment_approved') . '"
+                ,message: "' . $this->modx->lexicon('quip.comment_approved_msg', $commentArray) . '"
                 ,delay: 5
             });
         });
@@ -68,15 +75,15 @@ abstract class QuipManagerController extends modExtraManagerController {
     public function checkForRejection() {
         if (!empty($_REQUEST['quip_reject'])) {
             /** @var quipComment $comment */
-            $comment = $this->modx->getObject('quipComment',$_REQUEST['quip_reject']);
+            $comment = $this->modx->getObject(quipComment::class, $_REQUEST['quip_reject']);
             if ($comment && $comment->reject()) {
                 $commentArray = $comment->toArray();
-                $commentArray['createdon'] = strftime('%b %d, %Y',strtotime($comment->get('createdon')));
+                $commentArray['createdon'] = strftime('%b %d, %Y', strtotime($comment->get('createdon')));
                 $this->modx->regClientStartupHTMLBlock('<script type="text/javascript">
         Ext.onReady(function() {
             MODx.msg.status({
-                title: "'.$this->modx->lexicon('quip.comment_deleted').'"
-                ,message: "'.$this->modx->lexicon('quip.comment_deleted_msg',$commentArray).'"
+                title: "' . $this->modx->lexicon('quip.comment_deleted') . '"
+                ,message: "' . $this->modx->lexicon('quip.comment_deleted_msg', $commentArray) . '"
                 ,delay: 5
             });
         });
@@ -84,11 +91,4 @@ abstract class QuipManagerController extends modExtraManagerController {
             }
         }
     }
-}
-/**
- * @package quip
- * @subpackage controllers
- */
-class IndexManagerController extends QuipManagerController {
-    public static function getDefaultController() { return 'home'; }
 }

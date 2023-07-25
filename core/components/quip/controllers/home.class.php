@@ -21,16 +21,24 @@
  *
  * @package quip
  */
+require_once dirname(__FILE__, 2) . '/index.class.php';
+
 class QuipHomeManagerController extends QuipManagerController {
 
-    public function process(array $scriptProperties = array()) {
-        
+    public function process(array $scriptProperties = []) {
     }
-    public function getPageTitle() { return $this->modx->lexicon('quip'); }
+
+    public function getPageTitle() {
+        return $this->modx->lexicon('quip');
+    }
+
     public function loadCustomCssJs() {
-        $this->addJavascript($this->quip->config['jsUrl'].'widgets/comments.grid.js');
-        $this->addJavascript($this->quip->config['jsUrl'].'widgets/threads.panel.js');
-        $this->addLastJavascript($this->quip->config['jsUrl'].'sections/home.js');
+        $this->addJavascript($this->quip->config['jsUrl'] . 'widgets/comments.grid.js');
+        $this->addJavascript($this->quip->config['jsUrl'] . 'widgets/threads.panel.js');
+        $this->addLastJavascript($this->quip->config['jsUrl'] . 'sections/home.js');
     }
-    public function getTemplateFile() { return $this->quip->config['templatesPath'].'home.tpl'; }
+
+    public function getTemplateFile() {
+        return $this->quip->config['templatesPath'] . 'home.tpl';
+    }
 }

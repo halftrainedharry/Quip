@@ -21,17 +21,25 @@
  *
  * @package quip
  */
+require_once dirname(__FILE__, 2) . '/index.class.php';
+
 class QuipThreadManagerController extends QuipManagerController {
 
-    public function process(array $scriptProperties = array()) {
-        
+    public function process(array $scriptProperties = []) {
     }
-    public function getPageTitle() { return $this->modx->lexicon('quip'); }
+
+    public function getPageTitle() {
+        return $this->modx->lexicon('quip');
+    }
+
     public function loadCustomCssJs() {
-        $this->addJavascript($this->quip->config['jsUrl'].'widgets/comments.grid.js');
-        $this->addJavascript($this->quip->config['jsUrl'].'widgets/notifications.grid.js');
-        $this->addJavascript($this->quip->config['jsUrl'].'widgets/thread.panel.js');
-        $this->addLastJavascript($this->quip->config['jsUrl'].'sections/thread.js');
+        $this->addJavascript($this->quip->config['jsUrl'] . 'widgets/comments.grid.js');
+        $this->addJavascript($this->quip->config['jsUrl'] . 'widgets/notifications.grid.js');
+        $this->addJavascript($this->quip->config['jsUrl'] . 'widgets/thread.panel.js');
+        $this->addLastJavascript($this->quip->config['jsUrl'] . 'sections/thread.js');
     }
-    public function getTemplateFile() { return $this->quip->config['templatesPath'].'thread.tpl'; }
+
+    public function getTemplateFile() {
+        return $this->quip->config['templatesPath'] . 'thread.tpl';
+    }
 }
