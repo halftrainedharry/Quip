@@ -23,10 +23,22 @@
  */
 /**
  * Handles removal of threads if a Resource is deleted.
- * 
+ *
  * @package quip
  */
-$quip = $modx->getService('quip','Quip',$modx->getOption('quip.core_path',null,$modx->getOption('core_path').'components/quip/').'model/quip/',$scriptProperties);
+use MODX\Revolution\modX;
+use Quip\Quip;
+use Quip\Model\quipThread;
+
+$quip = null;
+try {
+    if ($modx->services->has('quip')) {
+        $quip = $modx->services->get('quip');
+    }
+} catch (ContainerExceptionInterface $e) {
+    return;
+}
+
 if (!($quip instanceof Quip)) return;
 
 switch ($modx->event->name) {
@@ -34,9 +46,9 @@ switch ($modx->event->name) {
         foreach ($scriptProperties['ids'] as $id) {
             if (empty($id)) continue;
 
-            $threads = $modx->getCollection('quipThread',array('resource' => $id));
+            $threads = $modx->getCollection(quipThread::class, ['resource' => $id]);
             foreach ($threads as $thread) {
-                $modx->log(modX::LOG_LEVEL_INFO,'[Quip] Removing thread: '.$thread->get('name'));
+                $modx->log(modX::LOG_LEVEL_INFO, '[Quip] Removing thread: ' . $thread->get('name'));
                 $thread->remove();
             }
         }

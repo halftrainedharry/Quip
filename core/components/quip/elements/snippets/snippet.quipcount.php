@@ -34,9 +34,21 @@
  * @author Shaun McCormick <shaun@modx.com>
  * @package quip
  */
-$quip = $modx->getService('quip','Quip',$modx->getOption('quip.core_path',null,$modx->getOption('core_path').'components/quip/').'model/quip/',$scriptProperties);
+use Quip\Quip;
+use Quip\Snippets\ThreadCount;
+
+$quip = null;
+try {
+    if ($modx->services->has('quip')) {
+        $quip = $modx->services->get('quip');
+    }
+} catch (ContainerExceptionInterface $e) {
+    return '';
+}
+
 if (!($quip instanceof Quip)) return '';
-$quip->initialize($modx->context->get('key'));
-$controller = $quip->loadController('ThreadCount');
-$output = $controller->run($scriptProperties);
+
+$snippet = $quip->loadSnippet(ThreadCount::class);
+if (!($snippet instanceof ThreadCount)) return '';
+$output = $snippet->run($scriptProperties);
 return $output;

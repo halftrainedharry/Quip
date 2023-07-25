@@ -34,11 +34,21 @@
  * @package quip
  */
 /** @var Quip $quip */
-$quip = $modx->getService('quip','Quip',$modx->getOption('quip.core_path',null,$modx->getOption('core_path').'components/quip/').'model/quip/',$scriptProperties);
+use Quip\Quip;
+use Quip\Snippets\Thread;
+
+$quip = null;
+try {
+    if ($modx->services->has('quip')) {
+        $quip = $modx->services->get('quip');
+    }
+} catch (ContainerExceptionInterface $e) {
+    return '';
+}
+
 if (!($quip instanceof Quip)) return '';
 
-$quip->initialize($modx->context->get('key'));
-
-$controller = $quip->loadController('Thread');
-$output = $controller->run($scriptProperties);
+$snippet = $quip->loadSnippet(Thread::class);
+if (!($snippet instanceof Thread)) return '';
+$output = $snippet->run($scriptProperties);
 return $output;
