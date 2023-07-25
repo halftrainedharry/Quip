@@ -24,11 +24,19 @@
  */
 /**
  * Returns the number of comments a given thread/user/family has
- *
- * @package quip
- * @subpackage controllers
  */
-class QuipThreadReplyController extends QuipController {
+namespace Quip\Snippets;
+
+use xPDO\xPDO;
+use MODX\Revolution\modX;
+use Quip\Snippets\BaseSnippet;
+use Quip\Model\quipThread;
+use Quip\Model\quipComment;
+use Quip\Model\quipCommentNotify;
+use Quip\Processors\Web\Comment\Create;
+use Quip\Processors\Web\Comment\Preview;
+
+class ThreadReply extends BaseSnippet {
     /** @var quipThread $thread */
     public $thread;
 
@@ -47,7 +55,7 @@ class QuipThreadReplyController extends QuipController {
      * @return void
      */
     public function initialize() {
-        $this->setDefaultProperties(array(
+        $this->setDefaultProperties([
             'thread' => '',
 
             'requireAuth' => false,
@@ -65,8 +73,8 @@ class QuipThreadReplyController extends QuipController {
             'allowedTags' => '<br><b><i>',
             'preHooks' => '',
             'postHooks' => '',
-            'debug' => false,
-        ));
+            'debug' => false
+        ]);
 
         if (!empty($_REQUEST['quip_thread'])) {
             $this->setProperty('thread', strip_tags($_REQUEST['quip_thread']));
@@ -77,18 +85,18 @@ class QuipThreadReplyController extends QuipController {
      * @return boolean|quipThread
      */
     public function getThread() {
-        $threadName = strip_tags($this->getProperty('thread',''));
+        $threadName = strip_tags($this->getProperty('thread', ''));
         if (empty($threadName)) return false;
-        $this->thread = $this->modx->getObject('quipThread',array('name' => $threadName));
+        $this->thread = $this->modx->getObject(quipThread::class, ['name' => $threadName]);
         if (empty($this->thread)) {
-            $this->thread = $this->modx->newObject('quipThread');
-            $this->thread->fromArray(array(
+            $this->thread = $this->modx->newObject(quipThread::class);
+            $this->thread->fromArray([
                 'name' => $threadName,
-                'createdon' => strftime('%Y-%m-%d %H:%M:%S',time()),
-                'moderated' => $this->getProperty('moderate',0,'isset'),
+                'createdon' => strftime('%Y-%m-%d %H:%M:%S', time()),
+                'moderated' => $this->getProperty('moderate', 0, 'isset'),
                 'resource' => $this->modx->resource->get('id'),
-                'idprefix' => $this->getProperty('idprefix','qcom'),
-            ),'',true,true);
+                'idprefix' => $this->getProperty('idprefix', 'qcom')
+            ], '', true, true);
             $this->thread->save();
         }
 
@@ -96,30 +104,30 @@ class QuipThreadReplyController extends QuipController {
         $this->thread->sync($this->getProperties());
         $ps = $this->thread->get('quipreply_call_params');
         if (!empty($ps)) {
-            $diff = array_diff_assoc($ps,$this->getProperties());
-            if (empty($diff)) $diff = array_diff_assoc($this->getProperties(),$ps);
+            $diff = array_diff_assoc($ps, $this->getProperties());
+            if (empty($diff)) $diff = array_diff_assoc($this->getProperties(), $ps);
         }
         if (empty($_REQUEST['quip_thread']) && (!empty($diff) || empty($ps))) { /* only sync call params if not on threaded reply page */
-            $this->thread->set('quipreply_call_params',$this->getProperties());
+            $this->thread->set('quipreply_call_params', $this->getProperties());
             $this->thread->save();
         }
         /* if in threaded reply page, get the original passing values to QuipReply in the thread's main page and use those */
         if (!empty($_REQUEST['quip_thread']) && is_array($ps) && !empty($ps)) {
-            $scriptProperties = array_merge($this->getProperties(),$ps);
+            $scriptProperties = array_merge($this->getProperties(), $ps);
             $this->setProperties($scriptProperties);
         }
-        unset($ps,$diff);
+        unset($ps, $diff);
         return $this->thread;
     }
 
     public function checkPermissions() {
         /* get parent and auth */
-        $requireAuth = $this->getProperty('requireAuth',false,'isset');
-        $requireUsergroups = $this->getProperty('requireUsergroups',false,'isset');
-        $this->parentThread = (integer) strip_tags($this->modx->getOption('quip_parent',$_REQUEST,$this->getProperty('parent',0)));
-        $this->hasAuth = $this->modx->user->hasSessionContext($this->modx->context->get('key')) || $this->getProperty('debug',false,'isset') || empty($requireAuth);
+        $requireAuth = $this->getProperty('requireAuth', false, 'isset');
+        $requireUsergroups = $this->getProperty('requireUsergroups', false, 'isset');
+        $this->parentThread = (integer) strip_tags($this->modx->getOption('quip_parent', $_REQUEST, $this->getProperty('parent', 0)));
+        $this->hasAuth = $this->modx->user->hasSessionContext($this->modx->context->get('key')) || $this->getProperty('debug', false, 'isset') || empty($requireAuth);
         if (!empty($requireUsergroups)) {
-            $requireUsergroups = explode(',',$this->getProperty('requireUsergroups',false,'isset'));
+            $requireUsergroups = explode(',', $this->getProperty('requireUsergroups', false, 'isset'));
             $this->hasAuth = $this->modx->user->isMember($requireUsergroups);
         }
         $this->isModerator = $this->thread->checkPolicy('moderate');
@@ -131,12 +139,12 @@ class QuipThreadReplyController extends QuipController {
 
         /* setup default placeholders */
         $p = $this->modx->request->getParameters();
-        unset($p['reported'],$p['quip_approved']);
-        $this->setPlaceholder('url',$this->modx->makeUrl($this->modx->resource->get('id'),'',$p));
+        unset($p['reported'], $p['quip_approved']);
+        $this->setPlaceholder('url', $this->modx->makeUrl($this->modx->resource->get('id'), '', $p));
 
-        $this->setPlaceholder('parent',$this->parentThread);
-        $this->setPlaceholder('thread',$this->thread->get('name'));
-        $this->setPlaceholder('idprefix',$this->thread->get('idprefix'));
+        $this->setPlaceholder('parent', $this->parentThread);
+        $this->setPlaceholder('thread', $this->thread->get('name'));
+        $this->setPlaceholder('idprefix', $this->thread->get('idprefix'));
 
         /* handle POST */
         $this->hasPreview = false;
@@ -159,13 +167,13 @@ class QuipThreadReplyController extends QuipController {
         } else if (!$isOpen) {
             $replyForm = $this->modx->lexicon('quip.thread_autoclosed');
         } else {
-            $replyForm = $this->quip->getChunk($this->getProperty('tplLoginToComment','quipLoginToComment'),$this->getPlaceholders());
+            $replyForm = $this->quip->getChunk($this->getProperty('tplLoginToComment', 'quipLoginToComment'), $this->getPlaceholders());
         }
 
         /* output or set to placeholder */
-        $toPlaceholder = $this->getProperty('toPlaceholder',false);
+        $toPlaceholder = $this->getProperty('toPlaceholder', false);
         if ($toPlaceholder) {
-            $this->modx->setPlaceholder($toPlaceholder,$replyForm);
+            $this->modx->setPlaceholder($toPlaceholder, $replyForm);
             return '';
         }
         return $replyForm;
@@ -173,16 +181,16 @@ class QuipThreadReplyController extends QuipController {
     }
 
     public function isOpen() {
-        return $this->thread->checkIfStillOpen($this->getProperty('closeAfter',14,'isset')) && !$this->getProperty('closed',false,'isset');
+        return $this->thread->checkIfStillOpen($this->getProperty('closeAfter', 14, 'isset')) && !$this->getProperty('closed', false, 'isset');
     }
 
     public function getReplyForm() {
-        $this->setPlaceholder('username',$this->modx->user->get('username'));
-        $this->setPlaceholder('unsubscribe','');
+        $this->setPlaceholder('username', $this->modx->user->get('username'));
+        $this->setPlaceholder('unsubscribe', '');
 
-        $fields = array();
+        $fields = [];
         foreach ($_POST as $k => $v) {
-            $fields[$k] = str_replace(array('[',']'),array('&#91;','&#93;'),$v);
+            $fields[$k] = str_replace(['[', ']'], ['&#91;', '&#93;'], $v);
         }
 
         $fields['name']    = strip_tags($fields['name']);
@@ -192,23 +200,23 @@ class QuipThreadReplyController extends QuipController {
         /* prefill fields */
         $profile = $this->modx->user->getOne('Profile');
         if ($profile) {
-            $this->setPlaceholder('name',!empty($fields['name']) ? $fields['name'] : $profile->get('fullname'));
-            $this->setPlaceholder('email',!empty($fields['email']) ? $fields['email'] : $profile->get('email'));
-            $this->setPlaceholder('website',!empty($fields['website']) ? $fields['website'] : $profile->get('website'));
+            $this->setPlaceholder('name', !empty($fields['name']) ? $fields['name'] : $profile->get('fullname'));
+            $this->setPlaceholder('email', !empty($fields['email']) ? $fields['email'] : $profile->get('email'));
+            $this->setPlaceholder('website', !empty($fields['website']) ? $fields['website'] : $profile->get('website'));
             $this->getUnSubscribeForm();
         }
 
         /* if requirePreview == false, auto-can post */
-        if (!$this->getProperty('requirePreview',false,'isset')) {
-            $this->setPlaceholder('can_post',true);
+        if (!$this->getProperty('requirePreview', false, 'isset')) {
+            $this->setPlaceholder('can_post', true);
         }
-        $this->setPlaceholders(array(
-            'post_action' => $this->getProperty('postAction','quip-post'),
-            'preview_action' => $this->getProperty('previewAction','quip-preview'),
-            'allowed_tags' => $this->getProperty('allowedTags','<b><i><strong><em><br>'),
-            'notifyChecked' => !empty($fields['notify']) ? ' checked="checked"' : '',
-        ));
-        return $this->quip->getChunk($this->getProperty('tplAddComment','quipAddComment'),$this->getPlaceholders());
+        $this->setPlaceholders([
+            'post_action' => $this->getProperty('postAction', 'quip-post'),
+            'preview_action' => $this->getProperty('previewAction', 'quip-preview'),
+            'allowed_tags' => $this->getProperty('allowedTags', '<b><i><strong><em><br>'),
+            'notifyChecked' => !empty($fields['notify']) ? ' checked="checked"' : ''
+        ]);
+        return $this->quip->getChunk($this->getProperty('tplAddComment', 'quipAddComment'), $this->getPlaceholders());
     }
 
     /**
@@ -219,29 +227,29 @@ class QuipThreadReplyController extends QuipController {
         if (!$this->modx->user->hasSessionContext($this->modx->context->get('key'))) return false;
 
         /** @var quipCommentNotify $notify */
-        $notify = $this->modx->getObject('quipCommentNotify',array(
+        $notify = $this->modx->getObject(quipCommentNotify::class, [
             'email' => $this->modx->user->Profile->get('email'),
-            'thread' => $this->thread->get('name'),
-        ));
+            'thread' => $this->thread->get('name')
+        ]);
         if ($notify) {
-            $this->setPlaceholder('notifyId',$notify->get('id'));
-            $this->setPlaceholder('unsubscribe',$this->quip->getChunk('quipUnsubscribe',$this->getPlaceholders()));
+            $this->setPlaceholder('notifyId', $notify->get('id'));
+            $this->setPlaceholder('unsubscribe', $this->quip->getChunk('quipUnsubscribe', $this->getPlaceholders()));
             $params = $this->modx->request->getParameters();
-            $params[$this->getProperty('unsubscribeAction','quip_unsubscribe')] = 1;
-            $this->setPlaceholder('unsubscribeUrl',$this->modx->makeUrl($this->modx->resource->get('id'),'',$params));
+            $params[$this->getProperty('unsubscribeAction', 'quip_unsubscribe')] = 1;
+            $this->setPlaceholder('unsubscribeUrl', $this->modx->makeUrl($this->modx->resource->get('id'), '', $params));
         }
         return true;
     }
 
     public function handlePost() {
-        $fields = array();
-        $errors = array();
+        $fields = [];
+        $errors = [];
         foreach ($_POST as $k => $v) {
-            $fields[$k] = str_replace(array('[',']'),array('&#91;','&#93;'),$v);
+            $fields[$k] = str_replace(['[', ']'], ['&#91;', '&#93;'], $v);
         }
 
-        if(empty($fields[$this->getProperty('postAction','quip-post')]) &&
-            empty($fields[$this->getProperty('previewAction','quip-preview')])) {
+        if(empty($fields[$this->getProperty('postAction', 'quip-post')]) &&
+            empty($fields[$this->getProperty('previewAction', 'quip-preview')])) {
             return;
         }
 
@@ -256,48 +264,48 @@ class QuipThreadReplyController extends QuipController {
         if (empty($fields['name'])) $errors['name'] = $this->modx->lexicon('quip.name_err_ns');
         if (empty($fields['email'])) $errors['email'] = $this->modx->lexicon('quip.email_err_ns');
 
-        if (!empty($_POST[$this->getProperty('postAction','quip-post')]) && empty($errors)) {
+        if (!empty($_POST[$this->getProperty('postAction', 'quip-post')]) && empty($errors)) {
             /** @var quipComment $comment */
-            $comment = $this->runProcessor('web/comment/create',$fields);
+            $comment = $this->runProcessor(Create::class, $fields);
 
             if (is_object($comment) && $comment instanceof quipComment) {
                 $params = $this->modx->request->getParameters();
-                unset($params[$this->getProperty('postAction')],$params['quip_parent'],$params['quip_thread']);
+                unset($params[$this->getProperty('postAction')], $params['quip_parent'], $params['quip_thread']);
                 $params['quip_approved'] = $comment->get('approved') ? 1 : 0;
 
                 /* redirect urls for custom FURL scheme  */
-                $redirectToUrl = $this->getProperty('redirectToUrl','');
-                $redirectTo = $this->getProperty('redirectTo','');
+                $redirectToUrl = $this->getProperty('redirectToUrl', '');
+                $redirectTo = $this->getProperty('redirectTo', '');
                 if (!empty($redirectToUrl)) {
-                    $url = $redirectToUrl.'?'.http_build_query($params);
+                    $url = $redirectToUrl . '?' . http_build_query($params);
                 } else if (!empty($redirectTo)) {
-                    $url = $this->modx->makeUrl($redirectTo,'',$params,'full');
+                    $url = $this->modx->makeUrl($redirectTo, '', $params, 'full');
                 } else {
-                    $url = $comment->makeUrl('',$params);
+                    $url = $comment->makeUrl('', $params);
                 }
 
                 /* if not approved, remove # and replace with success message #
                  * since comment is not yet visible
                  */
                 if (!$comment->get('approved')) {
-                    $url = str_replace('#'.$this->thread->get('idprefix').$comment->get('id'),'#quip-success-'.$this->thread->get('idprefix'),$url);
+                    $url = str_replace('#' . $this->thread->get('idprefix') . $comment->get('id'), '#quip-success-' . $this->thread->get('idprefix'), $url);
                 }
                 $this->modx->sendRedirect($url);
             } else if (is_array($comment)) {
-                $errors = array_merge($errors,$comment);
+                $errors = array_merge($errors, $comment);
             }
-            $fields[$this->getProperty('previewAction','quip-preview')] = true;
+            $fields[$this->getProperty('previewAction', 'quip-preview')] = true;
         }
         /* handle preview */
-        else if (!empty($fields[$this->getProperty('previewAction','quip-preview')]) && empty($errors)) {
-            $errors = $this->runProcessor('web/comment/preview',$fields);
+        else if (!empty($fields[$this->getProperty('previewAction', 'quip-preview')]) && empty($errors)) {
+            $errors = $this->runProcessor(Preview::class, $fields);
         }
         if (!empty($errors)) {
-            $placeholders['error'] = implode("<br />\n",$errors);
+            $placeholders['error'] = implode("<br />\n", $errors);
             foreach ($errors as $k => $v) {
-                $placeholders['error.'.$k] = $v;
+                $placeholders['error.' . $k] = $v;
             }
-            $this->setPlaceholders(array_merge($placeholders,$fields));
+            $this->setPlaceholders(array_merge($placeholders, $fields));
         }
     }
 
@@ -305,16 +313,16 @@ class QuipThreadReplyController extends QuipController {
      * @return bool|string
      */
     public function loadReCaptcha() {
-        $disableRecaptchaWhenLoggedIn = (boolean)$this->getProperty('disableRecaptchaWhenLoggedIn',true,'isset');
-        $useRecaptcha = (boolean)$this->getProperty('recaptcha',false,'isset');
+        $disableRecaptchaWhenLoggedIn = (boolean)$this->getProperty('disableRecaptchaWhenLoggedIn', true, 'isset');
+        $useRecaptcha = (boolean)$this->getProperty('recaptcha', false, 'isset');
         $isLoggedIn = $this->modx->user->hasSessionContext($this->modx->context->get('key'));
         if ($useRecaptcha && !($disableRecaptchaWhenLoggedIn && $isLoggedIn) && !$this->hasPreview) {
             /** @var reCaptcha $recaptcha */
-            $recaptcha = $this->modx->getService('recaptcha','reCaptcha',$this->quip->config['modelPath'].'recaptcha/');
+            $recaptcha = $this->modx->getService('recaptcha', 'reCaptcha', $this->quip->config['modelPath'] . 'recaptcha/');
             if ($recaptcha instanceof reCaptcha) {
-                $recaptchaTheme = $this->getProperty('recaptchaTheme','clean');
+                $recaptchaTheme = $this->getProperty('recaptchaTheme', 'clean');
                 $html = $recaptcha->getHtml($recaptchaTheme);
-                $this->modx->setPlaceholder('quip.recaptcha_html',$html);
+                $this->modx->setPlaceholder('quip.recaptcha_html', $html);
             } else {
                 return $this->modx->lexicon('quip.recaptcha_err_load');
             }
@@ -332,13 +340,13 @@ class QuipThreadReplyController extends QuipController {
             $profile = $this->modx->user->getOne('Profile');
             if ($profile) {
                 /** @var quipCommentNotify $notify */
-                $notify = $this->modx->getObject('quipCommentNotify',array(
+                $notify = $this->modx->getObject(quipCommentNotify::class, [
                     'email' => $profile->get('email'),
-                    'thread' => $this->thread->get('name'),
-                ));
+                    'thread' => $this->thread->get('name')
+                ]);
                 if ($notify && $notify->remove()) {
                     $unSubscribed = true;
-                    $this->setPlaceholder('successMsg',$this->modx->lexicon('quip.unsubscribed'));
+                    $this->setPlaceholder('successMsg', $this->modx->lexicon('quip.unsubscribed'));
                 }
             }
         }
@@ -351,8 +359,7 @@ class QuipThreadReplyController extends QuipController {
      */
     public function checkForModeration() {
         if (isset($_GET['quip_approved']) && $_GET['quip_approved'] == 0) {
-            $this->setPlaceholder('successMsg',$this->modx->lexicon('quip.comment_will_be_moderated'));
+            $this->setPlaceholder('successMsg', $this->modx->lexicon('quip.comment_will_be_moderated'));
         }
     }
 }
-return 'QuipThreadReplyController';

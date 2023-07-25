@@ -24,21 +24,26 @@
  */
 /**
  * Returns the number of comments a given thread/user/family has
- * 
- * @package quip
- * @subpackage controllers
  */
-class QuipThreadCountController extends QuipController {
+namespace Quip\Snippets;
+
+use xPDO\xPDO;
+use MODX\Revolution\modX;
+use MODX\Revolution\modUser;
+use Quip\Snippets\BaseSnippet;
+use Quip\Model\quipComment;
+
+class ThreadCount extends BaseSnippet {
     /**
      * Initialize this controller, setting up default properties
      * @return void
      */
     public function initialize() {
-        $this->setDefaultProperties(array(
+        $this->setDefaultProperties([
             'type' => 'thread',
             'family' => '',
-            'user' => '',
-        ));
+            'user' => ''
+        ]);
     }
 
     /**
@@ -46,43 +51,43 @@ class QuipThreadCountController extends QuipController {
      * @return int
      */
     public function getCount($type = 'thread') {
-        if (!is_array($type)) $type = explode(',',$type);
-        
-        $c = $this->modx->newQuery('quipComment');
+        if (!is_array($type)) $type = explode(',', $type);
+
+        $c = $this->modx->newQuery(quipComment::class);
 
         /* filter by user */
-        if (in_array('user',$type)) {
-            $user = $this->getProperty('user','');
+        if (in_array('user', $type)) {
+            $user = $this->getProperty('user', '');
 
-            $c->innerJoin('modUser','Author');
+            $c->innerJoin(modUser::class, 'Author');
             if (is_numeric($user)) {
-                $c->where(array(
-                    'Author.id' => $user,
-                ));
+                $c->where([
+                    'Author.id' => $user
+                ]);
             } else {
-                $c->where(array(
-                    'Author.username' => $user,
-                ));
+                $c->where([
+                    'Author.username' => $user
+                ]);
             }
         }
         /* filter by thread */
-        if (in_array('thread',$type)) {
-            $c->where(array(
-                'thread' => $this->getProperty('thread',''),
-            ));
+        if (in_array('thread', $type)) {
+            $c->where([
+                'thread' => $this->getProperty('thread', '')
+            ]);
         }
         /* filter by family */
-        if (in_array('family',$type)) {
-            $c->where(array(
-                'quipComment.thread:LIKE' => $this->getProperty('family',''),
-            ));
+        if (in_array('family', $type)) {
+            $c->where([
+                'quipComment.thread:LIKE' => $this->getProperty('family', '')
+            ]);
         }
 
-        $c->where(array(
+        $c->where([
             'quipComment.approved' => true,
-            'quipComment.deleted' => false,
-        ));
-        return $this->modx->getCount('quipComment',$c);
+            'quipComment.deleted' => false
+        ]);
+        return $this->modx->getCount(quipComment::class, $c);
     }
 
     /**
@@ -90,7 +95,7 @@ class QuipThreadCountController extends QuipController {
      * @return string
      */
     public function process() {
-        $output = $this->getCount($this->getProperty('type','thread'));
+        $output = $this->getCount($this->getProperty('type', 'thread'));
         return $this->output($output);
     }
 
@@ -101,12 +106,11 @@ class QuipThreadCountController extends QuipController {
      */
     public function output($output = '') {
         /* output */
-        $toPlaceholder = $this->getProperty('toPlaceholder',false);
+        $toPlaceholder = $this->getProperty('toPlaceholder', false);
         if ($toPlaceholder) {
-            $this->modx->setPlaceholder($toPlaceholder,$output);
+            $this->modx->setPlaceholder($toPlaceholder, $output);
             return '';
         }
         return $output;
     }
 }
-return 'QuipThreadCountController';

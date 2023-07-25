@@ -3,26 +3,32 @@
  * @package quip
  * @subpackage request
  */
-abstract class QuipController {
+namespace Quip\Snippets;
+
+use xPDO\xPDO;
+use MODX\Revolution\modX;
+use Quip\Quip;
+
+abstract class BaseSnippet {
     /** @var modX $modx */
     public $modx;
     /** @var Quip $quip */
     public $quip;
     /** @var array $config */
-    public $config = array();
+    public $config = [];
     /** @var array $scriptProperties */
-    protected $scriptProperties = array();
+    protected $scriptProperties = [];
 
-    protected $placeholders = array();
+    protected $placeholders = [];
 
     /**
      * @param Quip $quip A reference to the Quip instance
      * @param array $config
      */
-    function __construct(Quip &$quip,array $config = array()) {
+    function __construct(Quip &$quip, array $config = []) {
         $this->quip =& $quip;
         $this->modx =& $quip->modx;
-        $this->config = array_merge($this->config,$config);
+        $this->config = array_merge($this->config, $config);
     }
 
     public function run($scriptProperties) {
@@ -39,8 +45,8 @@ abstract class QuipController {
      * @param array $defaults
      * @return void
      */
-    protected function setDefaultProperties(array $defaults = array()) {
-        $this->scriptProperties = array_merge($defaults,$this->scriptProperties);
+    protected function setDefaultProperties(array $defaults = []) {
+        $this->scriptProperties = array_merge($defaults, $this->scriptProperties);
     }
 
     /**
@@ -49,7 +55,7 @@ abstract class QuipController {
      * @param mixed $value
      * @return void
      */
-    public function setProperty($key,$value) {
+    public function setProperty($key, $value) {
         $this->scriptProperties[$key] = $value;
     }
     /**
@@ -59,7 +65,7 @@ abstract class QuipController {
      */
     public function setProperties($array) {
         foreach ($array as $k => $v) {
-            $this->setProperty($k,$v);
+            $this->setProperty($k, $v);
         }
     }
 
@@ -77,7 +83,7 @@ abstract class QuipController {
      * @param string $method
      * @return mixed
      */
-    public function getProperty($key,$default = null,$method = 'isset') {
+    public function getProperty($key, $default = null, $method = 'isset') {
         $v = $default;
         switch ($method) {
             case 'empty':
@@ -88,7 +94,7 @@ abstract class QuipController {
                 break;
             case 'isset':
             default:
-                if (array_key_exists($key,$this->scriptProperties)) {
+                if (array_key_exists($key, $this->scriptProperties)) {
                     $v = $this->scriptProperties[$key];
                 }
                 break;
@@ -96,40 +102,37 @@ abstract class QuipController {
         return $v;
     }
 
-    public function setPlaceholder($k,$v) {
+    public function setPlaceholder($k, $v) {
         $this->placeholders[$k] = $v;
     }
-    public function getPlaceholder($k,$default = null) {
+    public function getPlaceholder($k, $default = null) {
         return isset($this->placeholders[$k]) ? $this->placeholders[$k] : $default;
     }
     public function setPlaceholders($array) {
         foreach ($array as $k => $v) {
-            $this->setPlaceholder($k,$v);
+            $this->setPlaceholder($k, $v);
         }
     }
     public function getPlaceholders() {
         return $this->placeholders;
     }
 
-
     /**
      * @param string $processor
      * @param array $fields
      * @return mixed|string
      */
-    public function runProcessor($processor,array $fields = array()) {
+    public function runProcessor($processorClass, array $fields = []) {
         $output = '';
-        $processorFile = $this->config['processorsPath'].$processor.'.php';
-        if (!file_exists($processorFile)) {
+        if (!class_exists($processorClass)) {
             return $output;
         }
 
-        $modx =& $this->modx;
-        $quip =& $this->quip;
+        $processor = new $processorClass($this);
         try {
-            $output = include $processorFile;
-        } catch (Exception $e) {
-            $this->modx->log(modX::LOG_LEVEL_ERROR,'[Quip] '.$e->getMessage());
+            $output = $processor->process($fields);
+        } catch (\Exception $e) {
+            $this->modx->log(modX::LOG_LEVEL_ERROR, '[Quip] ' . $e->getMessage());
         }
         return $output;
     }
