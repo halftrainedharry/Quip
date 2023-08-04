@@ -29,32 +29,35 @@
  */
 use xPDO\Transport\xPDOTransport;
 use MODX\Revolution\modSystemSetting;
+use xPDO\xPDO;
 
 $success= false;
-switch ($options[xPDOTransport::PACKAGE_ACTION]) {
-    case xPDOTransport::ACTION_INSTALL:
-    case xPDOTransport::ACTION_UPGRADE:
-        $settings = array(
-            'emailsTo',
-            'emailsFrom',
-            'emailsReplyTo',
-        );
-        foreach ($settings as $key) {
-            if (isset($options[$key])) {
-                $setting = $object->xpdo->getObject(modSystemSetting::class, ['key' => 'quip.' . $key]);
-                if ($setting != null) {
-                    $setting->set('value', $options[$key]);
-                    $setting->save();
-                } else {
-                    $object->xpdo->log(xPDO::LOG_LEVEL_ERROR,'[Quip] ' . $key . ' setting could not be found, so the setting could not be changed.');
+if ($transport->xpdo) {
+    switch ($options[xPDOTransport::PACKAGE_ACTION]) {
+        case xPDOTransport::ACTION_INSTALL:
+        case xPDOTransport::ACTION_UPGRADE:
+            $settings = array(
+                'emailsTo',
+                'emailsFrom',
+                'emailsReplyTo',
+            );
+            foreach ($settings as $key) {
+                if (isset($options[$key])) {
+                    $setting = $transport->xpdo->getObject(modSystemSetting::class, ['key' => 'quip.' . $key]);
+                    if ($setting != null) {
+                        $setting->set('value', $options[$key]);
+                        $setting->save();
+                    } else {
+                        $transport->xpdo->log(xPDO::LOG_LEVEL_ERROR,'[Quip] ' . $key . ' setting could not be found, so the setting could not be changed.');
+                    }
                 }
             }
-        }
 
-        $success= true;
-        break;
-    case xPDOTransport::ACTION_UNINSTALL:
-        $success= true;
-        break;
+            $success= true;
+            break;
+        case xPDOTransport::ACTION_UNINSTALL:
+            $success= true;
+            break;
+    }
 }
 return $success;

@@ -31,7 +31,7 @@ snippets:
       - name: replyResourceId
         description: quip.prop_replyresourceid_desc
         type: textfield
-        value:
+        value: ''
         lexicon: quip:properties
       - name: threadedPostMargin
         description: quip.prop_threadedpostmargin_desc
@@ -66,7 +66,7 @@ snippets:
       - name: useMargins
         description: quip.prop_usemargins_desc
         type: combo-boolean
-        value: ''
+        value: '0'
         lexicon: quip:properties
       - name: useCss
         description: quip.prop_usecss_desc
@@ -171,7 +171,7 @@ snippets:
       - name: toPlaceholder
         description: quip.prop_toplaceholder_desc
         type: textfield
-        value:
+        value: ''
         lexicon: quip:properties
       - name: placeholderPrefix
         description: quip.prop_placeholderprefix_desc
